@@ -1,0 +1,15 @@
+/venv
+/tmp
+*_out.txt
+**/__pycache__
+**/.ipynb_checkpoints
+HELP.md
+
+### IntelliJ IDEA ###
+**/.idea
+*.iws
+*.iml
+*.ipr
+
+### VS Code ###
+.vscode/
