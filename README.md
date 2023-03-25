@@ -25,6 +25,6 @@
     
     (5) https://ro.uow.edu.au/cgi/viewcontent.cgi?article=1698&context=eispapers1
     
-    (6) https://www.google.com/url?sa=t&source=web&rct=j&url=https://github.com/ageitgey/face_recognition&ved=2ahUKEwin-8SA-tj9AhXwgf0HHQ00Ca8QFnoECC0QAQ&usg=AOvVaw1ARIEn_v53-Z7n-ItnMaqz
-    
+    (6) https://github.com/ageitgey/face_recognition
+
     (7) https://stackoverflow.com/questions/70492290/how-to-make-a-face-recognitionidentification-and-verification-program

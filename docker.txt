@@ -1,0 +1,11 @@
+docker network create fuzzy
+
+docker stop fuzzy
+
+docker rm fuzzy
+
+docker build -t fuzzy .
+
+docker run --name=fuzzy --network fuzzy -dit -p 2222:22 -m=5000m fuzzy
+docker start fuzzy
+docker exec -it fuzzy bash

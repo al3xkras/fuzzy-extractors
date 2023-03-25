@@ -1,4 +1,4 @@
-/venv
+**/venv
 /tmp
 *_out.txt
 **/__pycache__
