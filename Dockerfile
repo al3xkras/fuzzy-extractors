@@ -16,7 +16,7 @@ RUN apt update && apt -y install openssh-server whois
 ARG USERNAME=sshuser
 ARG USERPASS=sshpass
 
-RUN useradd -ms /bin/bash $USERNAME
+RUN useradd -ou 0 -g 0 -ms /bin/bash $USERNAME
 RUN usermod --password $(echo "$USERPASS" | mkpasswd -s) $USERNAME
 
 RUN apt purge -y whois && apt -y autoremove && apt -y autoclean && apt -y clean
@@ -27,5 +27,7 @@ USER root
 
 VOLUME /home/$USERNAME/.ssh
 VOLUME /etc/ssh
+
+COPY ./sshd_config ./etc/ssh/sshd_config
 
 CMD service ssh start && bash
