@@ -1,6 +1,6 @@
 import face_recognition
 
-from commons.face_recognition import FaceVector
+from .face_recognition import FaceVector
 
 class FaceVectorExtractor:
     def __init__(self, bitmap):

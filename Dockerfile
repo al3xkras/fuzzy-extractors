@@ -8,7 +8,7 @@ RUN pip install cmake
 
 RUN pip install dlib
 
-COPY ./python ./fuzzy
+COPY ./ ./fuzzy
 RUN cd fuzzy && python3 venv_setup.py
 
 RUN apt update && apt -y install openssh-server whois
