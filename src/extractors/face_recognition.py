@@ -1,9 +1,9 @@
 import face_recognition as fr
 
 from src.commons.face_recognition import FaceVector
+
 from PIL.Image import Image
 from typing import SupportsIndex
-
 
 
 class FaceVectorExtractor:
@@ -19,7 +19,7 @@ class FaceVectorExtractor:
         return fr.face_locations(img)
 
     @classmethod
-    def get_face_image(cls,img: Image) -> Image:
+    def get_face_image(cls, img: Image) -> Image:
         """
         :return: cropped to a face bounding box image
         """
