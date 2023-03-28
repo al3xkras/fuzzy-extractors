@@ -31,5 +31,7 @@ class FaceVectorExtractor:
         :return: cropped to a face bounding box image
         """
         bbox = cls.get_face_bounding_box(img)
+        print(bbox)
+        bbox = bbox[3],bbox[0],bbox[1],bbox[2]
         return img.crop(bbox)
 

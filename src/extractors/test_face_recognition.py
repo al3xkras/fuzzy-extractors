@@ -17,8 +17,15 @@ class TestFaceVectorExtractor(TestCase):
         bbox = FaceVectorExtractor.get_face_bounding_box(img)
         self.assertIsNotNone(bbox)
         self.assertIsInstance(bbox,tuple)
+        print(bbox)
 
         img.close()
 
     def test_get_face_image(self):
-        self.fail()
+        img,tag = TestCases.randomImageTagged()
+
+        face = FaceVectorExtractor.get_face_image(img)
+        face.save("../../tmp/test_get_face_image1.png","png")
+        expected_after_crop=(0,0,face.width,face.height)
+        print(expected_after_crop)
+        img.close()

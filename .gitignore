@@ -1,4 +1,4 @@
-/images
+**/tmp
 **/venv
 /tmp
 *_out.txt

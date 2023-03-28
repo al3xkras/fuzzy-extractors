@@ -7,6 +7,7 @@ import os
 
 class TestCases:
     image_path = "../../images/"
+    tmp_path = "../../tmp/"
     _dir_cache = {}
 
     @classmethod
