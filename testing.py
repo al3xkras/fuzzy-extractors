@@ -5,9 +5,10 @@ import PIL.Image
 from PIL.Image import Image
 import os
 
+
 class TestCases:
-    image_path = "../../images/"
-    tmp_path = "../../tmp/"
+    image_path = "images/"
+    tmp_path = "tmp/"
     _dir_cache = {}
 
     @classmethod
@@ -21,7 +22,11 @@ class TestCases:
             cls._dir_cache[cls.image_path] = files
         img_file = files[random.randint(0, len(files) - 1)]
         tag = img_file.split(".")[0]
-        return PIL.Image.open(cls.image_path+img_file), tag
+        return PIL.Image.open(cls.image_path + img_file), tag
+
+    @classmethod
+    def getImageByTag(cls, tag: str):
+        return PIL.Image.open(cls.image_path + tag + ".png")
 
     @classmethod
     def clearCache(cls):
