@@ -1,7 +1,6 @@
 import face_recognition.api as fr
 import numpy as np
 from PIL.Image import Image
-from typing import SupportsIndex
 
 import face_recognition
 import cv2
@@ -9,9 +8,12 @@ import cv2
 Video = cv2.VideoCapture
 
 
-class VideoFaceExtractor:
-    def __init__(self, video: Video = None):
-        self.video = video
+class FrameIterator:
+    def __init__(self, video: Video|str = None):
+        if isinstance(video,Video):
+            self.video = video
+        else:
+            self.video=Video(video)
 
     def load_file(self, path: str):
         self.video = Video(path)
@@ -21,8 +23,8 @@ class VideoFaceExtractor:
         success, image = video.read()
         count = 0
         while success:
-            image_consumer(image)
             success, image = video.read()
+            success = success and image_consumer(image)
             count += 1
 
     @classmethod
@@ -36,18 +38,19 @@ class FaceVectorExtractor:
         pass
 
     @classmethod
-    def get_face_bounding_box(cls, img: Image) -> tuple[int, int, int, int]:
+    def get_face_bounding_box(cls, img: Image|np.ndarray) -> tuple[int, int, int, int]:
         """
         Returns a bounding box of a human face in an image
         (if an image contains >1 or 0 faces, raise a runtime Exception)
         """
-        img = cls.img_to_arr(img)
+        if isinstance(img,Image):
+            img = cls.img_to_arr(img)
 
         boxes = fr.face_locations(img)
         if len(boxes) > 1:
-            raise Exception("more than 1 face detected")
+            raise ValueError("more than 1 face detected")
         if len(boxes) == 0:
-            raise Exception("no face detected")
+            raise ValueError("no face detected")
         return boxes[0]
 
     @staticmethod
@@ -55,15 +58,17 @@ class FaceVectorExtractor:
         return np.array(img.convert(mode))
 
     @classmethod
-    def get_face_image(cls, img: Image) -> Image:
+    def get_face_image(cls, img: Image|np.ndarray) -> Image|np.ndarray:
         """
         :return: cropped to a face bounding box image
         """
         bbox = cls.get_face_bounding_box(img)
         print(bbox)
-        bbox = bbox[3], bbox[0], bbox[1], bbox[2]
-        return img.crop(bbox)
-
+        if isinstance(img,Image):
+            bbox = bbox[3], bbox[0], bbox[1], bbox[2]
+            return img.crop(bbox)
+        elif isinstance(img,np.ndarray):
+            return img[bbox[0]:bbox[2],bbox[3]:bbox[1]]
 
 class FuzzyExtractorFaceRecognition:
     """
@@ -88,13 +93,13 @@ class FuzzyExtractorFaceRecognition:
         self.min_images = min_images
         self.key_size = key_size
 
-    def preprocess_images(self, images: SupportsIndex[np.ndarray]) -> list[np.ndarray]:
+    def preprocess_images(self, images: list[np.ndarray]) -> list[np.ndarray]:
         pass
 
-    def get_p_val(self, images: SupportsIndex[np.ndarray]) -> list[np.ndarray]:
+    def get_p_val(self, images: list[np.ndarray]) -> list[np.ndarray]:
         pass
 
-    def hash_primary(self, images: SupportsIndex[np.ndarray]) -> bytes:
+    def hash_primary(self, images: list[np.ndarray]) -> bytes:
         """
         create a primary hash value, based on the p-value, and cropped images
         - The hash function should be collision resistant
@@ -123,5 +128,5 @@ class FuzzyExtractorFaceRecognition:
         """
         pass
 
-    def generate_private_key(self, image_sequence: SupportsIndex[np.ndarray]) -> bytes:
+    def generate_private_key(self, image_sequence: list[np.ndarray]) -> bytes:
         pass
