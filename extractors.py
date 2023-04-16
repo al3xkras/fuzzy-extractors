@@ -4,6 +4,31 @@ from PIL.Image import Image
 from typing import SupportsIndex
 
 import face_recognition
+import cv2
+
+Video = cv2.VideoCapture
+
+
+class VideoFaceExtractor:
+    def __init__(self, video: Video = None):
+        self.video = video
+
+    def load_file(self, path: str):
+        self.video = Video(path)
+
+    def iterate_images(self, image_consumer):
+        video = self.video
+        success, image = video.read()
+        count = 0
+        while success:
+            image_consumer(image)
+            success, image = video.read()
+            count += 1
+
+    @classmethod
+    def save_image(cls, image: np.ndarray, file_name: str):
+        cv2.imwrite(file_name, image)
+
 
 
 class FaceVectorExtractor:
@@ -87,8 +112,8 @@ class FuzzyExtractorFaceRecognition:
          create a secondary hash value, based on the primary hash value: (possible algorithms: SHA256)
          - map similar within a confidence interval primary hash codes to equal secondary codes
          - collision resistance for hash codes, that are not similar within the confidence level
-         - first image resistance
-         - second image resistance
+         - first preimage resistance
+         - second preimage resistance
         """
         pass
 
@@ -99,18 +124,4 @@ class FuzzyExtractorFaceRecognition:
         pass
 
     def generate_private_key(self, image_sequence: SupportsIndex[np.ndarray]) -> bytes:
-        """
-        generate private key based on a sequence (e.g. video) of images using
-        prebuilt face recognition model
-
-        the output length is based on the configuration of this class
-
-        if images contain faces of different people, the output private key
-        should be significantly different and should not authenticate the user
-
-        private key contains pseudo-random part and consumes fuzzy extractor data
-
-        :param image_sequence: a sequence of images to generate a key
-        :return: byte sequence (key) of pre-defined length (128bit/256bit/512bit)
-        """
         pass
