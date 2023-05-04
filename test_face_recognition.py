@@ -11,6 +11,9 @@ import face_recognition as fr
 
 from extractors import FuzzyExtractorFaceRecognition
 
+fx = FuzzyExtractorFaceRecognition(min_images=20)
+fun = lambda person,n=20: fx.preprocess_images(np.array(random.sample(TestCases.getImagesByTagPrefix(person), n)))
+
 
 class TestFaceVectorExtractor(TestCase):
     def test_img_opens(self):
@@ -85,19 +88,14 @@ class TestFaceVectorExtractor(TestCase):
 class TestFuzzyExtractorFaceRecognition(TestCase):
 
     def test_init(self) -> FuzzyExtractorFaceRecognition:
-        fx = FuzzyExtractorFaceRecognition(min_images=20)
-        return fx
+        return FuzzyExtractorFaceRecognition(min_images=20)
 
     def test_preprocess_images(self):
-        fx = self.test_init()
         elon = np.array(TestCases.getImagesByTagPrefix("NileRed")[:15])
         elon = fx.preprocess_images(elon)
         print(elon[0])
 
     def test_primary_hash_equality_for_the_same_person(self):
-        fx = self.test_init()
-
-        fun = lambda person: fx.preprocess_images(np.array(random.sample(TestCases.getImagesByTagPrefix(person), 20)))
 
         elon = fx.hash_primary(fun("ElonMusk"))
         elon1 = fx.hash_primary(fun("ElonMusk"))
@@ -108,9 +106,6 @@ class TestFuzzyExtractorFaceRecognition(TestCase):
         self.assertEqual(elon, elon1)
 
     def test_primary_hash_inequality_for_different_people(self):
-        fx = self.test_init()
-
-        fun = lambda person: fx.preprocess_images(np.array(random.sample(TestCases.getImagesByTagPrefix(person), 20)))
 
         elon = fx.hash_primary(fun("ElonMusk"))
         nile = fx.hash_primary(fun("NileRed"))
@@ -121,7 +116,6 @@ class TestFuzzyExtractorFaceRecognition(TestCase):
         self.assertNotEqual(elon, nile)
 
     def test_hash_primary(self) -> bytes:
-        fx = self.test_init()
 
         elon = np.array(random.sample(TestCases.getImagesByTagPrefix("ElonMusk"), 20))
 
@@ -142,3 +136,17 @@ class TestFuzzyExtractorFaceRecognition(TestCase):
         print(hash_elon)
         print(hash_elon1)
         print(hash_nile)
+
+    def test_distil_face_vector_outliers(self):
+
+        elon = fun("NileRed",20)
+        print("length before rejecting outliers: ",len(elon))
+
+        elon1=fx.distil_face_vector_outliers(elon)
+        print("length after rejecting outliers: ", len(elon1))
+
+        elon2 = fx.distil_face_vector_outliers(elon1)
+        print("length after rejecting twice: ",len(elon2))
+
+
+

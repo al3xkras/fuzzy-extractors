@@ -1,11 +1,10 @@
-import sys
-
 import PIL.Image
 import face_recognition.api as fr
 import numpy as np
 from PIL.Image import Image
 import cv2
 import hashlib
+from itertools import combinations
 
 Video = cv2.VideoCapture
 
@@ -56,7 +55,7 @@ class FaceVectorExtractor:
 
     @staticmethod
     def img_to_arr(img: Image, mode="RGB"):
-        if isinstance(img,np.ndarray):
+        if isinstance(img, np.ndarray):
             return img
         return np.array(img.convert(mode))
 
@@ -123,6 +122,7 @@ class FuzzyExtractorFaceRecognition:
             except ValueError | IndexError:
                 return None
             return item
+
         lst = [f(x) for x in images]
         lst = [x for x in lst if x is not None]
         return np.array(lst)
@@ -140,8 +140,39 @@ class FuzzyExtractorFaceRecognition:
             (unable to build the private key for the given set of images)
         5. Otherwise, return the list of vectors, that does not contain outliers.
         """
-        #todo implement
-        return face_vectors
+        sample = []
+
+        def f(v1: np.ndarray, v2: np.ndarray) -> float:
+            return (abs(v1 - v2)).mean()
+
+        def get_outliers(data, var_max=1.2):
+            if var_max <= 0:
+                return data
+
+            filter_ = np.array([x[0] for x in data])
+            # print("mean,std = ",filter_.mean(),filter_.std())
+            filter_=abs(filter_ - np.mean(filter_)) >= var_max * np.std(filter_)
+            # print(filter_)
+            rejected = [data[i] for i in range(len(data)) if filter_[i]]
+
+            return rejected
+
+        for i,j in combinations(range(len(face_vectors)), 2):
+            a,b = face_vectors[i],face_vectors[j]
+            f_=f(a, b)
+            # print("face vectors statistic:",i,j,f_)
+            sample.append([f_, i, j])
+
+        sample_ = {}
+        for _,i,j in get_outliers(sample):
+            sample_[i]=sample_.get(i,0)+1
+
+        sample_=get_outliers([(sample_[x],x) for x in sample_])
+        sample_=set([x[1] for x in sample_])
+
+        #print(len(sample_))
+        return np.array([x for i,x in enumerate(face_vectors) if not i in sample_])
+
 
     def get_image_statistics(self, face_vectors: np.ndarray[np.ndarray]) -> tuple[np.ndarray, np.ndarray]:
         """
@@ -186,10 +217,10 @@ class FuzzyExtractorFaceRecognition:
             (1)(this probability is measured in the test cases, contained in this application)
         """
         img_mean, img_std = self.get_image_statistics(face_vectors)
-        stat=sum(x > self.std_thr for x in img_std)
+        stat = sum(x > self.std_thr for x in img_std)
         if stat > self.alpha * len(img_std):
-            print(stat,img_std)
-            raise ValueError("Std of the images provided is too high. Unable to build a safe primary hash: %d"%stat)
+            print(stat, img_std)
+            raise ValueError("Std of the images provided is too high. Unable to build a safe primary hash: %d" % stat)
 
         def f(val: float):
             k = int(val / self.d)
@@ -224,7 +255,7 @@ class FuzzyExtractorFaceRecognition:
          - first preimage resistance
          - second preimage resistance
 
-         This method uses built-in implementation of the SHA256 algorithm.
+         This method uses built-in implementation of the SHA256 secure hash algorithm.
         """
         sha256 = hashlib.sha256()
         sha256.update(hash_primary)
