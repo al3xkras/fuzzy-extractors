@@ -1,4 +1,8 @@
+import random
 from unittest import TestCase
+
+import PIL.Image
+import numpy as np
 
 from testing import TestCases
 from extractors import FaceVectorExtractor
@@ -39,29 +43,27 @@ class TestFaceVectorExtractor(TestCase):
         print(len(encodings))
 
     def test_face_vector_similarity(self):
-        img1 = TestCases.getImageByTag("NileRed100")
-        img2 = TestCases.getImageByTag("NileRed500")
-
-        img3 = TestCases.getImageByTag("stark1")
-        img4 = TestCases.getImageByTag("stark1")
+        img1, img2 = TestCases.getImagesByTagPrefix("NileRed")[:2]
+        img3, img4 = TestCases.getImagesByTagPrefix("ElonMusk")[:2]
 
         i = 1
 
         def get_encodings(img):
             nonlocal i
             face = FaceVectorExtractor.get_face_image(img)
-            face.save("/fuzzy/tmp/face%d.png" % i)
+            PIL.Image.fromarray(face).save("/fuzzy/tmp/face%s.png" % i)
             i += 1
-            arr = FaceVectorExtractor.img_to_arr(face)
-
-            return fr.face_encodings(arr)[0]
+            arr = FaceVectorExtractor.img_to_arr(img)
+            try:
+                return fr.face_encodings(arr)[0]
+            except:
+                return None
 
         enc1 = get_encodings(img1)
         enc2 = get_encodings(img2)
         enc3 = get_encodings(img3)
         enc4 = get_encodings(img4)
-        # print(enc1)
-        # print(enc2)
+        print(enc1, enc2, enc3, enc4)
 
         diff = abs(enc1 - enc2)
         diff1 = abs(enc3 - enc4)
@@ -84,7 +86,32 @@ class TestFuzzyExtractorFaceRecognition(TestCase):
 
     def test_init(self) -> FuzzyExtractorFaceRecognition:
         fx = FuzzyExtractorFaceRecognition()
+        return fx
 
+    def test_preprocess_images(self):
+        fx = self.test_init()
+        elon = np.array(TestCases.getImagesByTagPrefix("NileRed")[:15])
+        elon = fx.preprocess_images(elon)
+        print(elon[0])
 
-    def test_hash_primary_1(self) -> bytes:
-        pass
+    def test_hash_primary(self) -> bytes:
+        fx = self.test_init()
+
+        elon = np.array(random.sample(TestCases.getImagesByTagPrefix("ElonMusk"),10))
+        elon1 = np.array(random.sample(TestCases.getImagesByTagPrefix("ElonMusk"), 10))
+
+        nile = np.array(random.sample(TestCases.getImagesByTagPrefix("NileRed"),10))
+
+        elon = fx.preprocess_images(elon)
+        elon1 = fx.preprocess_images(elon1)
+        nile = fx.preprocess_images(nile)
+
+        hash_elon = fx.hash_primary(elon)
+        hash_elon1 = fx.hash_primary(elon1)
+        hash_nile = fx.hash_primary(nile)
+
+        self.assertNotEqual(hash_elon,hash_nile)
+
+        print(hash_elon)
+        print(hash_elon1)
+        print(hash_nile)

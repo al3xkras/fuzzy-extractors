@@ -4,7 +4,6 @@ import PIL.Image
 import face_recognition.api as fr
 import numpy as np
 from PIL.Image import Image
-
 import cv2
 import hashlib
 
@@ -57,6 +56,8 @@ class FaceVectorExtractor:
 
     @staticmethod
     def img_to_arr(img: Image, mode="RGB"):
+        if isinstance(img,np.ndarray):
+            return img
         return np.array(img.convert(mode))
 
     @classmethod
@@ -95,10 +96,10 @@ class FuzzyExtractorFaceRecognition:
         self.conf_int = conf_int
         self.min_images = min_images
         self.key_size_bytes = key_size_bytes
-        self.d = 0.001
+        self.d = 0.02
         self.std_thr = 0.02
         self.mean_thr = 0.04
-        self.alpha = 0.05
+        self.alpha = 0.5
 
     def preprocess_images(self, images: np.ndarray[np.ndarray | Image]) -> np.ndarray[np.ndarray]:
         """
@@ -111,27 +112,28 @@ class FuzzyExtractorFaceRecognition:
         if len(images) == 0:
             return images
 
-        g = FaceVectorExtractor.get_face_image
+        g = lambda x: fr.face_encodings(x)[0]
 
         def f(item):
             if isinstance(item, Image):
                 item = FaceVectorExtractor.img_to_arr(item)
             try:
+                FaceVectorExtractor.get_face_bounding_box(item)
                 item = g(item)
-            except ValueError:
+            except ValueError | IndexError:
                 return None
             return item
+        lst = [f(x) for x in images]
+        lst = [x for x in lst if x is not None]
+        return np.array(lst)
 
-        f = np.vectorize(f)
-        return f(images)
-
-    def get_image_statistics(self, images: np.ndarray[np.ndarray]) -> tuple[np.ndarray, np.ndarray]:
+    def get_image_statistics(self, face_vectors: np.ndarray[np.ndarray]) -> tuple[np.ndarray, np.ndarray]:
         """
         input: a set of face vectors
         output: array of means, array of standard deviations
         """
-        img_std = np.array([images[:, i].std() for i in range(images.shape[1])], dtype=float)
-        img_mean = np.array([images[:, i].mean() for i in range(images.shape[1])], dtype=float)
+        img_std = np.array([face_vectors[:, i].std() for i in range(face_vectors.shape[1])], dtype=float)
+        img_mean = np.array([face_vectors[:, i].mean() for i in range(face_vectors.shape[1])], dtype=float)
         return img_mean, img_std
 
     def hash_primary(self, images_processed: np.ndarray[np.ndarray]) -> bytes:
@@ -161,9 +163,10 @@ class FuzzyExtractorFaceRecognition:
         values. It is obviously not collision resistant, and is not a secure cryptographic hash function.
         """
         img_mean, img_std = self.get_image_statistics(images_processed)
-
-        if sum(x > self.std_thr for x in img_std) > self.alpha * len(img_std):
-            raise ValueError("Std of the images provided is too high. Unable to build a safe primary hash")
+        stat=sum(x > self.std_thr for x in img_std)
+        if stat > self.alpha * len(img_std):
+            print(stat,img_std)
+            raise ValueError("Std of the images provided is too high. Unable to build a safe primary hash: %d"%stat)
 
         def f(val: float):
             k = int(val / self.d)
@@ -175,7 +178,7 @@ class FuzzyExtractorFaceRecognition:
         f = np.vectorize(f)
 
         actual_landmarks = f(img_mean)
-        return self.hash_format(actual_landmarks.tobytes(sys.byteorder))
+        return self.hash_format(actual_landmarks.tobytes('C'))
 
     def hash_format(self, key: bytes) -> bytes:
         """
