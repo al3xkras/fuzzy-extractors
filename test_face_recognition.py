@@ -37,15 +37,20 @@ class TestFaceVectorExtractor(TestCase):
         print(len(encodings))
 
     def test_face_vector_similarity(self):
-        img1 = TestCases.getImageByTag("elon1")
-        img2 = TestCases.getImageByTag("elon3")
+        img1 = TestCases.getImageByTag("NileRed100")
+        img2 = TestCases.getImageByTag("NileRed500")
 
-        img3 = TestCases.getImageByTag("stark2")
-        img4 = TestCases.getImageByTag("stark3")
+        img3 = TestCases.getImageByTag("stark1")
+        img4 = TestCases.getImageByTag("stark1")
 
+        i=1
         def get_encodings(img):
+            nonlocal i
             face = FaceVectorExtractor.get_face_image(img)
+            face.save("/fuzzy/tmp/face%d.png"%i)
+            i+=1
             arr = FaceVectorExtractor.img_to_arr(face)
+
             return fr.face_encodings(arr)[0]
 
         enc1 = get_encodings(img1)
@@ -57,7 +62,7 @@ class TestFaceVectorExtractor(TestCase):
 
         diff = abs(enc1 - enc2)
         diff1 = abs(enc3 - enc4)
-        diff2 = abs(enc1-enc3)
+        diff2 = abs(enc1 - enc3)
 
         print("(images contain the same person)")
 

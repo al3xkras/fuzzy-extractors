@@ -7,7 +7,7 @@ import os
 
 
 class TestCases:
-    image_path = "images/"
+    image_path = os.path.dirname(__file__)+"/images/"
     tmp_path = "tmp/"
     _dir_cache = {}
 
@@ -26,6 +26,7 @@ class TestCases:
 
     @classmethod
     def getImageByTag(cls, tag: str):
+        print(cls.image_path)
         return PIL.Image.open(cls.image_path + tag + ".png")
 
     @classmethod

@@ -1,19 +1,22 @@
+import sys
+
 import face_recognition.api as fr
 import numpy as np
 from PIL.Image import Image
 
 import face_recognition
 import cv2
+import hashlib
 
 Video = cv2.VideoCapture
 
 
 class FrameIterator:
-    def __init__(self, video: Video|str = None):
-        if isinstance(video,Video):
+    def __init__(self, video: Video | str = None):
+        if isinstance(video, Video):
             self.video = video
         else:
-            self.video=Video(video)
+            self.video = Video(video)
 
     def load_file(self, path: str):
         self.video = Video(path)
@@ -32,18 +35,17 @@ class FrameIterator:
         cv2.imwrite(file_name, image)
 
 
-
 class FaceVectorExtractor:
     def __init__(self, *args):
         pass
 
     @classmethod
-    def get_face_bounding_box(cls, img: Image|np.ndarray) -> tuple[int, int, int, int]:
+    def get_face_bounding_box(cls, img: Image | np.ndarray) -> tuple[int, int, int, int]:
         """
         Returns a bounding box of a human face in an image
         (if an image contains >1 or 0 faces, raise a runtime Exception)
         """
-        if isinstance(img,Image):
+        if isinstance(img, Image):
             img = cls.img_to_arr(img)
 
         boxes = fr.face_locations(img)
@@ -58,17 +60,18 @@ class FaceVectorExtractor:
         return np.array(img.convert(mode))
 
     @classmethod
-    def get_face_image(cls, img: Image|np.ndarray) -> Image|np.ndarray:
+    def get_face_image(cls, img: Image | np.ndarray) -> Image | np.ndarray:
         """
         :return: cropped to a face bounding box image
         """
         bbox = cls.get_face_bounding_box(img)
         print(bbox)
-        if isinstance(img,Image):
+        if isinstance(img, Image):
             bbox = bbox[3], bbox[0], bbox[1], bbox[2]
             return img.crop(bbox)
-        elif isinstance(img,np.ndarray):
-            return img[bbox[0]:bbox[2],bbox[3]:bbox[1]]
+        elif isinstance(img, np.ndarray):
+            return img[bbox[0]:bbox[2], bbox[3]:bbox[1]]
+
 
 class FuzzyExtractorFaceRecognition:
     """
@@ -92,14 +95,27 @@ class FuzzyExtractorFaceRecognition:
         self.conf_int = conf_int
         self.min_images = min_images
         self.key_size = key_size
+        self.d = 0.001
+        self.std_thr = 0.02
+        self.mean_thr = 0.04
+        self.alpha = 0.05
 
     def preprocess_images(self, images: list[np.ndarray]) -> list[np.ndarray]:
+        """
+
+        """
         pass
 
-    def get_p_val(self, images: list[np.ndarray]) -> list[np.ndarray]:
-        pass
+    def get_image_statistics(self, images: np.ndarray[np.ndarray]) -> tuple[np.ndarray, np.ndarray]:
+        """
+        input: a set of face vectors
+        output: array of means, array of standard deviations
+        """
+        img_std = np.array([images[:, i].std() for i in range(images.shape[1])], dtype=float)
+        img_mean = np.array([images[:, i].mean() for i in range(images.shape[1])], dtype=float)
+        return img_mean,img_std
 
-    def hash_primary(self, images: list[np.ndarray]) -> bytes:
+    def hash_primary(self, images: np.ndarray[np.ndarray]) -> bytes:
         """
         create a primary hash value, based on the p-value, and cropped images
         - The hash function should be collision resistant
@@ -109,18 +125,53 @@ class FuzzyExtractorFaceRecognition:
          - The hash is not required to be 2-nd image resistant:
           (given face image, it is always possible
           to find a different face image with equal or similar hash)
-        """
-        pass
 
-    def hash_secondary(self, hash_primary: bytes) -> bytes:
+        used method:
+        1. consider a hypercube of given radius r_0 \\gt 0 in 128-dimensional space (D) with default
+        Euclidean metrics
+        2. D is divided into packed spheres of given radius (with gaps)
+        3. If a certain face vector
+        is inside a gap, the program should not compute its hash and raise an Exception
+        4. Otherwise, the hash value
+        will be equal to the center of a sphere, where the face vector is located
+        5. If the standard deviation of the
+        image set is high at a fixed level, the method will raise an Exception (hash value can not be created for
+        the given set)
+        6. Byte representation of the sphere center is returned (128-dimensional vector) => primary
+        hash will map similar faces with similarity coefficient determined by the sphere radius into equal hash
+        values. It is obviously not collision resistant, and is not a secure cryptographic hash function.
         """
-         create a secondary hash value, based on the primary hash value: (possible algorithms: SHA256)
+        img_mean,img_std=self.get_image_statistics(images)
+
+        if sum(x > self.std_thr for x in img_std) > self.alpha * len(img_std):
+            raise ValueError("Std of the images provided is too high. Unable to build a safe primary hash")
+
+        def f(val: float):
+            k = int(val / self.d)
+            res = val - k * self.d
+            if res == 0:
+                raise ValueError
+            return (k + 0.5) * self.d
+        f = np.vectorize(f)
+
+        actual_landmarks = f(img_mean)
+        return actual_landmarks.tobytes(sys.byteorder)
+
+
+    @staticmethod
+    def hash_secondary(hash_primary: bytes) -> bytes:
+        """
+         Create a secondary hash value, based on the primary hash value: (possible algorithms: SHA256)
          - map similar within a confidence interval primary hash codes to equal secondary codes
          - collision resistance for hash codes, that are not similar within the confidence level
          - first preimage resistance
          - second preimage resistance
+
+         This method uses built-in implementation of the SHA256 algorithm.
         """
-        pass
+        sha256 = hashlib.sha256()
+        sha256.update(hash_primary)
+        return sha256.digest()
 
     def hash_expansion(self, hash_secondary: bytes) -> bytes:
         """
@@ -128,5 +179,5 @@ class FuzzyExtractorFaceRecognition:
         """
         pass
 
-    def generate_private_key(self, image_sequence: list[np.ndarray]) -> bytes:
+    def generate_private_key(self, images: list[np.ndarray]) -> bytes:
         pass

@@ -12,10 +12,10 @@ def extract_video_faces(name: str):
     fi = FrameIterator("./videos/%s.mp4" % name)
     ex = FaceVectorExtractor()
     i = 0
-    i_max = 2000
+    i_max = 500
 
     def consumer(img: np.ndarray):
-        global i
+        nonlocal i
         if i > i_max:
             return False
         i += 1
@@ -23,7 +23,7 @@ def extract_video_faces(name: str):
             return True
         try:
             face = ex.get_face_image(img)
-            fi.save_image(face, "./images/%s%d.jpg" % (name, i))
+            fi.save_image(img, "./images/%s%d.png" % (name, i))
         except ValueError:
             return True
         return True
@@ -32,4 +32,4 @@ def extract_video_faces(name: str):
 
 
 if __name__ == '__main__':
-    pass
+    extract_video_faces(names[1])
