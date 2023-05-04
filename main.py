@@ -11,8 +11,9 @@ names = [
 def extract_video_faces(name: str):
     fi = FrameIterator("./videos/%s.mp4" % name)
     ex = FaceVectorExtractor()
+    k = 30
     i = 0
-    i_max = 1500
+    i_max = 75*k
     j = 0
 
     def consumer(img: np.ndarray):
@@ -20,7 +21,7 @@ def extract_video_faces(name: str):
         if i > i_max:
             return False
         i += 1
-        if i % 30 != 0:
+        if i % k != 0:
             return True
         try:
             ex.get_face_image(img)

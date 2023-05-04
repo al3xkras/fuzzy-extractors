@@ -99,8 +99,8 @@ class TestFuzzyExtractorFaceRecognition(TestCase):
 
     def test_primary_hash_equality_for_the_same_person(self):
 
-        elon = fx.hash_primary(fun("ElonMusk"))
-        elon1 = fx.hash_primary(fun("ElonMusk"))
+        elon = fx.hash_primary(fx.reject_face_vector_outliers(fun("ElonMusk",20)))
+        elon1 = fx.hash_primary(fx.reject_face_vector_outliers(fun("ElonMusk",20)))
 
         print(elon)
         print(elon1)
@@ -109,46 +109,38 @@ class TestFuzzyExtractorFaceRecognition(TestCase):
 
     def test_primary_hash_inequality_for_different_people(self):
 
-        elon = fx.hash_primary(fun("ElonMusk"))
-        nile = fx.hash_primary(fun("NileRed"))
+        elon = fx.hash_primary(fx.reject_face_vector_outliers(fun("ElonMusk",20)))
+        nile = fx.hash_primary(fx.reject_face_vector_outliers(fun("NileRed",20)))
 
         print(elon)
         print(nile)
 
         self.assertNotEqual(elon, nile)
 
-    def test_hash_primary(self) -> bytes:
+    def test_hash_primary(self):
+        name="ElonMusk"
+        trials = 250
+        population_size=55
+        faces = [x for x in fun(name, population_size)]
+        samp_size = int(len(faces)*0.7)
+        unique_hashes=dict()
+        for i in range(trials):
+            samp = random.sample(faces,samp_size)
+            elon = fx.hash_primary(fx.reject_face_vector_outliers(samp))
+            unique_hashes[elon]=unique_hashes.get(elon,0)+1
+        print("Unique hashes (for %s):\n"%name,unique_hashes,"\n")
 
-        elon = np.array(random.sample(TestCases.getImagesByTagPrefix("ElonMusk"), 20))
-
-        elon1 = np.array(random.sample(TestCases.getImagesByTagPrefix("ElonMusk"), 20))
-
-        nile = np.array(random.sample(TestCases.getImagesByTagPrefix("NileRed"), 20))
-
-        elon = fx.preprocess_images(elon)
-        elon1 = fx.preprocess_images(elon1)
-        nile = fx.preprocess_images(nile)
-
-        hash_elon = fx.hash_primary(elon)
-        hash_elon1 = fx.hash_primary(elon1)
-        hash_nile = fx.hash_primary(nile)
-
-        self.assertNotEqual(hash_elon, hash_nile)
-
-        print(hash_elon)
-        print(hash_elon1)
-        print(hash_nile)
-
-    def test_distil_face_vector_outliers(self):
+    def test_remove_face_vector_outliers(self):
 
         elon = fun("NileRed",20)
         print("length before rejecting outliers: ",len(elon))
 
-        elon1=fx.distil_face_vector_outliers(elon)
+        elon1=fx.reject_face_vector_outliers(elon)
         print("length after rejecting outliers: ", len(elon1))
 
-        elon2 = fx.distil_face_vector_outliers(elon1)
+        elon2 = fx.reject_face_vector_outliers(elon1)
         print("length after rejecting twice: ",len(elon2))
 
-
+    def test_generate_private_key(self):
+        pass
 

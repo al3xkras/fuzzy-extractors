@@ -95,7 +95,7 @@ class FuzzyExtractorFaceRecognition:
         self.conf_int = conf_int
         self.min_images = min_images
         self.key_size_bytes = key_size_bytes
-        self.d = 0.02
+        self.d = 0.01
         self.std_thr = 0.03
         self.mean_thr = 0.04
         self.alpha = 0.5
@@ -127,7 +127,7 @@ class FuzzyExtractorFaceRecognition:
         lst = [x for x in lst if x is not None]
         return np.array(lst)
 
-    def distil_face_vector_outliers(self, face_vectors: np.ndarray[np.ndarray]) -> np.ndarray[np.ndarray]:
+    def reject_face_vector_outliers(self, face_vectors: np.ndarray[np.ndarray]) -> np.ndarray[np.ndarray]:
         """
         Reject 'outlier' images (such images, that have a comparably high standard deviation, and can not be used for the
         generation of private key).
@@ -145,34 +145,33 @@ class FuzzyExtractorFaceRecognition:
         def f(v1: np.ndarray, v2: np.ndarray) -> float:
             return (abs(v1 - v2)).mean()
 
-        def get_outliers(data, var_max=1.2):
+        def get_outliers(data, var_max=0.7):
             if var_max <= 0:
                 return data
 
             filter_ = np.array([x[0] for x in data])
             # print("mean,std = ",filter_.mean(),filter_.std())
-            filter_=abs(filter_ - np.mean(filter_)) >= var_max * np.std(filter_)
+            filter_ = abs(filter_ - np.mean(filter_)) >= var_max * np.std(filter_)
             # print(filter_)
             rejected = [data[i] for i in range(len(data)) if filter_[i]]
 
             return rejected
 
-        for i,j in combinations(range(len(face_vectors)), 2):
-            a,b = face_vectors[i],face_vectors[j]
-            f_=f(a, b)
+        for i, j in combinations(range(len(face_vectors)), 2):
+            a, b = face_vectors[i], face_vectors[j]
+            f_ = f(a, b)
             # print("face vectors statistic:",i,j,f_)
             sample.append([f_, i, j])
 
         sample_ = {}
-        for _,i,j in get_outliers(sample):
-            sample_[i]=sample_.get(i,0)+1
+        for _, i, j in get_outliers(sample):
+            sample_[i] = sample_.get(i, 0) + 1
 
-        sample_=get_outliers([(sample_[x],x) for x in sample_])
-        sample_=set([x[1] for x in sample_])
+        sample_ = get_outliers([(sample_[x], x) for x in sample_])
+        sample_ = set([x[1] for x in sample_])
 
-        #print(len(sample_))
-        return np.array([x for i,x in enumerate(face_vectors) if not i in sample_])
-
+        # print(len(sample_))
+        return np.array([x for i, x in enumerate(face_vectors) if not i in sample_])
 
     def get_image_statistics(self, face_vectors: np.ndarray[np.ndarray]) -> tuple[np.ndarray, np.ndarray]:
         """
@@ -238,7 +237,6 @@ class FuzzyExtractorFaceRecognition:
         """
         expand the hash value to the required key length
         """
-        # todo use the kupyna hash algo
         if len(key) == self.key_size_bytes:
             return key
         elif len(key) > self.key_size_bytes:
@@ -263,5 +261,5 @@ class FuzzyExtractorFaceRecognition:
 
     def generate_private_key(self, images: np.ndarray[np.ndarray]) -> bytes:
         vectors = self.preprocess_images(images)
-        vectors = self.distil_face_vector_outliers(vectors)
+        vectors = self.reject_face_vector_outliers(vectors)
         return self.hash_secondary(self.hash_primary(vectors))
