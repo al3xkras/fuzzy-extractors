@@ -127,6 +127,22 @@ class FuzzyExtractorFaceRecognition:
         lst = [x for x in lst if x is not None]
         return np.array(lst)
 
+    def distil_face_vector_outliers(self, face_vectors: np.ndarray[np.ndarray]) -> np.ndarray[np.ndarray]:
+        """
+        Reject 'outlier' images (such images, that have a comparably high standard deviation, and can not be used for the
+        generation of private key).
+        1. Compute statistics for each pair of the input vectors (O(n^2))
+        2. Find out, which pairs should be rejected (as the sample outliers)
+        3. Compute the list of vectors to remove by their frequency in the list of rejected pairs
+        4. Reject outliers from the list of vectors, formed in the previous step (by their number of occurrences).
+            (in this case, outliers can only have higher values than the sample mean)
+        5. If the percentage of outliers is too high, reject the input
+            (unable to build the private key for the given set of images)
+        5. Otherwise, return the list of vectors, that does not contain outliers.
+        """
+        #todo implement
+        return face_vectors
+
     def get_image_statistics(self, face_vectors: np.ndarray[np.ndarray]) -> tuple[np.ndarray, np.ndarray]:
         """
         input: a set of face vectors
@@ -136,33 +152,40 @@ class FuzzyExtractorFaceRecognition:
         img_mean = np.array([face_vectors[:, i].mean() for i in range(face_vectors.shape[1])], dtype=float)
         return img_mean, img_std
 
-    def hash_primary(self, images_processed: np.ndarray[np.ndarray]) -> bytes:
+    def hash_primary(self, face_vectors: np.ndarray[np.ndarray]) -> bytes:
         """
-        create a primary hash value, based on the p-value, and cropped images
+        Create a primary hash value, based on the list of face vectors
         - The hash function should be collision resistant
-          (hash value of similar within the confidence level faces should be very similar, but not equal)
-         - Given a hash value, it should not be possible to retrieve the actual face landmarks
-           (first image resistance)
-         - The hash is not required to be 2-nd image resistant:
-          (given face image, it is always possible
-          to find a different face image with equal or similar hash)
+          (the hash value of 'similar' face vectors should be equal)
+         - Given the hash value, it might be possible to retrieve the actual face landmarks
+           (non-resistant to the first preimage)
+         - The hash function is not 2-nd preimage resistant:
+           (given face vector, it is always possible
+            to find a different face vector with equal or similar hash)
 
-        used method:
-        1. consider a hypercube of given radius r_0 \\gt 0 in 128-dimensional space (D) with default
-        Euclidean metrics
-        2. D is divided into packed spheres of given radius (with gaps)
-        3. If a certain face vector
-        is inside a gap, the program should not compute its hash and raise an Exception
-        4. Otherwise, the hash value
-        will be equal to the center of a sphere, where the face vector is located
-        5. If the standard deviation of the
-        image set is high at a fixed level, the method will raise an Exception (hash value can not be created for
-        the given set)
-        6. Byte representation of the sphere center is returned (128-dimensional vector) => primary
-        hash will map similar faces with similarity coefficient determined by the sphere radius into equal hash
-        values. It is obviously not collision resistant, and is not a secure cryptographic hash function.
+        Implementation description:
+        1. Consider a hypercube of a given edge length in the 128-dimensional space (D) with the default
+            Euclidean metrics
+        2. D is uniformly divided into hypercubes, without gaps
+        3. Then, if a certain face vector is located on a hypercube edge,
+            the program should not compute the hash value and will raise an Exception instead.
+        4. Otherwise, the hash value returned by this function
+            is equal to the center of a hypercube, that contains the face vector
+        5. If the standard deviation of the set of face vectors is high, the method should raise an Exception
+            (1)(the hash value may not be created for the given images)
+        6. A byte representation of the hypercube center is extended to a specified length (32 bytes by default)
+        7. The byte representation is returned
+
+        => As the result, this hash method maps similar face vectors into equal hash values with a high probability
+            (1)(the actual score of this model is measured in the test cases)
+            (2)(if the list of face vectors does not contain outliers)
+
+        This method is not collision resistant, and is not a secure cryptographic hash function.
+        It is a Monte-Carlo algorithm to estimate the actual private key of a person, therefore it has a fixes
+            execution time, however it may output incorrect answers with a certain probability
+            (1)(this probability is measured in the test cases, contained in this application)
         """
-        img_mean, img_std = self.get_image_statistics(images_processed)
+        img_mean, img_std = self.get_image_statistics(face_vectors)
         stat=sum(x > self.std_thr for x in img_std)
         if stat > self.alpha * len(img_std):
             print(stat,img_std)
@@ -208,5 +231,6 @@ class FuzzyExtractorFaceRecognition:
         return self.hash_format(sha256.digest())
 
     def generate_private_key(self, images: np.ndarray[np.ndarray]) -> bytes:
-        images = self.preprocess_images(images)
-        return self.hash_secondary(self.hash_primary(images))
+        vectors = self.preprocess_images(images)
+        vectors = self.distil_face_vector_outliers(vectors)
+        return self.hash_secondary(self.hash_primary(vectors))
