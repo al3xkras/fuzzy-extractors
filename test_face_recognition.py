@@ -10,10 +10,12 @@ from extractors import FaceVectorExtractor
 import face_recognition as fr
 
 from extractors import FuzzyExtractorFaceRecognition
+from logger import Logger
 
 fx = FuzzyExtractorFaceRecognition(min_images=20)
 fun = lambda person,n=20: fx.preprocess_images(np.array(random.sample(TestCases.getImagesByTagPrefix(person), n)))
 
+print = lambda *o: Logger.info(" ".join(map(str, o))) if len(o) > 0 else Logger.info("\n")
 
 class TestFaceVectorExtractor(TestCase):
     def test_img_opens(self):
