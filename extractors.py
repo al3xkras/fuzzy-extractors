@@ -134,7 +134,7 @@ class FuzzyExtractorFaceRecognition:
         img_mean = np.array([images[:, i].mean() for i in range(images.shape[1])], dtype=float)
         return img_mean, img_std
 
-    def hash_primary(self, images: np.ndarray[np.ndarray]) -> bytes:
+    def hash_primary(self, images_processed: np.ndarray[np.ndarray]) -> bytes:
         """
         create a primary hash value, based on the p-value, and cropped images
         - The hash function should be collision resistant
@@ -160,7 +160,7 @@ class FuzzyExtractorFaceRecognition:
         hash will map similar faces with similarity coefficient determined by the sphere radius into equal hash
         values. It is obviously not collision resistant, and is not a secure cryptographic hash function.
         """
-        img_mean, img_std = self.get_image_statistics(images)
+        img_mean, img_std = self.get_image_statistics(images_processed)
 
         if sum(x > self.std_thr for x in img_std) > self.alpha * len(img_std):
             raise ValueError("Std of the images provided is too high. Unable to build a safe primary hash")
@@ -181,7 +181,7 @@ class FuzzyExtractorFaceRecognition:
         """
         expand the hash value to the required key length
         """
-        # todo use kupyna hash
+        # todo use the kupyna hash algo
         if len(key) == self.key_size_bytes:
             return key
         elif len(key) > self.key_size_bytes:
@@ -204,5 +204,6 @@ class FuzzyExtractorFaceRecognition:
         sha256.update(hash_primary)
         return self.hash_format(sha256.digest())
 
-    def generate_private_key(self, images: list[np.ndarray]) -> bytes:
-        pass
+    def generate_private_key(self, images: np.ndarray[np.ndarray]) -> bytes:
+        images = self.preprocess_images(images)
+        return self.hash_secondary(self.hash_primary(images))

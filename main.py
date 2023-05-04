@@ -13,17 +13,19 @@ def extract_video_faces(name: str):
     ex = FaceVectorExtractor()
     i = 0
     i_max = 500
+    j = 0
 
     def consumer(img: np.ndarray):
-        nonlocal i
+        nonlocal i, j
         if i > i_max:
             return False
         i += 1
         if i % 100 != 0:
             return True
         try:
-            face = ex.get_face_image(img)
-            fi.save_image(img, "./images/%s%d.png" % (name, i))
+            ex.get_face_image(img)
+            fi.save_image(img, "./images/%s%d.png" % (name, j))
+            j += 1
         except ValueError:
             return True
         return True
