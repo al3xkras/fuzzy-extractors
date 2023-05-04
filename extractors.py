@@ -97,7 +97,7 @@ class FuzzyExtractorFaceRecognition:
         self.min_images = min_images
         self.key_size_bytes = key_size_bytes
         self.d = 0.02
-        self.std_thr = 0.02
+        self.std_thr = 0.03
         self.mean_thr = 0.04
         self.alpha = 0.5
 

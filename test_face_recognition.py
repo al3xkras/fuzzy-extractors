@@ -85,7 +85,7 @@ class TestFaceVectorExtractor(TestCase):
 class TestFuzzyExtractorFaceRecognition(TestCase):
 
     def test_init(self) -> FuzzyExtractorFaceRecognition:
-        fx = FuzzyExtractorFaceRecognition()
+        fx = FuzzyExtractorFaceRecognition(min_images=20)
         return fx
 
     def test_preprocess_images(self):
@@ -94,13 +94,40 @@ class TestFuzzyExtractorFaceRecognition(TestCase):
         elon = fx.preprocess_images(elon)
         print(elon[0])
 
+    def test_primary_hash_equality_for_the_same_person(self):
+        fx = self.test_init()
+
+        fun = lambda person: fx.preprocess_images(np.array(random.sample(TestCases.getImagesByTagPrefix(person), 20)))
+
+        elon = fx.hash_primary(fun("ElonMusk"))
+        elon1 = fx.hash_primary(fun("ElonMusk"))
+
+        print(elon)
+        print(elon1)
+
+        self.assertEqual(elon, elon1)
+
+    def test_primary_hash_inequality_for_different_people(self):
+        fx = self.test_init()
+
+        fun = lambda person: fx.preprocess_images(np.array(random.sample(TestCases.getImagesByTagPrefix(person), 20)))
+
+        elon = fx.hash_primary(fun("ElonMusk"))
+        nile = fx.hash_primary(fun("NileRed"))
+
+        print(elon)
+        print(nile)
+
+        self.assertNotEqual(elon, nile)
+
     def test_hash_primary(self) -> bytes:
         fx = self.test_init()
 
-        elon = np.array(random.sample(TestCases.getImagesByTagPrefix("ElonMusk"),10))
-        elon1 = np.array(random.sample(TestCases.getImagesByTagPrefix("ElonMusk"), 10))
+        elon = np.array(random.sample(TestCases.getImagesByTagPrefix("ElonMusk"), 20))
 
-        nile = np.array(random.sample(TestCases.getImagesByTagPrefix("NileRed"),10))
+        elon1 = np.array(random.sample(TestCases.getImagesByTagPrefix("ElonMusk"), 20))
+
+        nile = np.array(random.sample(TestCases.getImagesByTagPrefix("NileRed"), 20))
 
         elon = fx.preprocess_images(elon)
         elon1 = fx.preprocess_images(elon1)
@@ -110,7 +137,7 @@ class TestFuzzyExtractorFaceRecognition(TestCase):
         hash_elon1 = fx.hash_primary(elon1)
         hash_nile = fx.hash_primary(nile)
 
-        self.assertNotEqual(hash_elon,hash_nile)
+        self.assertNotEqual(hash_elon, hash_nile)
 
         print(hash_elon)
         print(hash_elon1)
