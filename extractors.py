@@ -1,10 +1,10 @@
 import sys
 
+import PIL.Image
 import face_recognition.api as fr
 import numpy as np
 from PIL.Image import Image
 
-import face_recognition
 import cv2
 import hashlib
 
@@ -91,20 +91,39 @@ class FuzzyExtractorFaceRecognition:
     privacy with regard to statistical databases.[3]
     """
 
-    def __init__(self, conf_int=0.01, min_images=5, key_size=128):
+    def __init__(self, conf_int=0.01, min_images=5, key_size_bytes=32):
         self.conf_int = conf_int
         self.min_images = min_images
-        self.key_size = key_size
+        self.key_size_bytes = key_size_bytes
         self.d = 0.001
         self.std_thr = 0.02
         self.mean_thr = 0.04
         self.alpha = 0.05
 
-    def preprocess_images(self, images: list[np.ndarray]) -> list[np.ndarray]:
+    def preprocess_images(self, images: np.ndarray[np.ndarray | Image]) -> np.ndarray[np.ndarray]:
         """
+        1. convert images to numpy (mode: RGB)
+        2. locate faces; remove images that do not contain any face
+        3. remove images that contain multiple faces
+        4. crop image to a face rectangle
+        5. return processed list of faces
+        """
+        if len(images) == 0:
+            return images
 
-        """
-        pass
+        g = FaceVectorExtractor.get_face_image
+
+        def f(item):
+            if isinstance(item, Image):
+                item = FaceVectorExtractor.img_to_arr(item)
+            try:
+                item = g(item)
+            except ValueError:
+                return None
+            return item
+
+        f = np.vectorize(f)
+        return f(images)
 
     def get_image_statistics(self, images: np.ndarray[np.ndarray]) -> tuple[np.ndarray, np.ndarray]:
         """
@@ -113,7 +132,7 @@ class FuzzyExtractorFaceRecognition:
         """
         img_std = np.array([images[:, i].std() for i in range(images.shape[1])], dtype=float)
         img_mean = np.array([images[:, i].mean() for i in range(images.shape[1])], dtype=float)
-        return img_mean,img_std
+        return img_mean, img_std
 
     def hash_primary(self, images: np.ndarray[np.ndarray]) -> bytes:
         """
@@ -141,7 +160,7 @@ class FuzzyExtractorFaceRecognition:
         hash will map similar faces with similarity coefficient determined by the sphere radius into equal hash
         values. It is obviously not collision resistant, and is not a secure cryptographic hash function.
         """
-        img_mean,img_std=self.get_image_statistics(images)
+        img_mean, img_std = self.get_image_statistics(images)
 
         if sum(x > self.std_thr for x in img_std) > self.alpha * len(img_std):
             raise ValueError("Std of the images provided is too high. Unable to build a safe primary hash")
@@ -152,14 +171,26 @@ class FuzzyExtractorFaceRecognition:
             if res == 0:
                 raise ValueError
             return (k + 0.5) * self.d
+
         f = np.vectorize(f)
 
         actual_landmarks = f(img_mean)
-        return actual_landmarks.tobytes(sys.byteorder)
+        return self.hash_format(actual_landmarks.tobytes(sys.byteorder))
 
+    def hash_format(self, key: bytes) -> bytes:
+        """
+        expand the hash value to the required key length
+        """
+        # todo use kupyna hash
+        if len(key) == self.key_size_bytes:
+            return key
+        elif len(key) > self.key_size_bytes:
+            return key[:self.key_size_bytes]
+        key = key + key[:(self.key_size_bytes - len(key))]
+        assert len(key) == self.key_size_bytes
+        return key
 
-    @staticmethod
-    def hash_secondary(hash_primary: bytes) -> bytes:
+    def hash_secondary(self, hash_primary: bytes) -> bytes:
         """
          Create a secondary hash value, based on the primary hash value: (possible algorithms: SHA256)
          - map similar within a confidence interval primary hash codes to equal secondary codes
@@ -171,13 +202,7 @@ class FuzzyExtractorFaceRecognition:
         """
         sha256 = hashlib.sha256()
         sha256.update(hash_primary)
-        return sha256.digest()
-
-    def hash_expansion(self, hash_secondary: bytes) -> bytes:
-        """
-        expand the hash value to the required key length
-        """
-        pass
+        return self.hash_format(sha256.digest())
 
     def generate_private_key(self, images: list[np.ndarray]) -> bytes:
         pass

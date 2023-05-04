@@ -5,6 +5,8 @@ from extractors import FaceVectorExtractor
 
 import face_recognition as fr
 
+from extractors import FuzzyExtractorFaceRecognition
+
 
 class TestFaceVectorExtractor(TestCase):
     def test_img_opens(self):
@@ -43,12 +45,13 @@ class TestFaceVectorExtractor(TestCase):
         img3 = TestCases.getImageByTag("stark1")
         img4 = TestCases.getImageByTag("stark1")
 
-        i=1
+        i = 1
+
         def get_encodings(img):
             nonlocal i
             face = FaceVectorExtractor.get_face_image(img)
-            face.save("/fuzzy/tmp/face%d.png"%i)
-            i+=1
+            face.save("/fuzzy/tmp/face%d.png" % i)
+            i += 1
             arr = FaceVectorExtractor.img_to_arr(face)
 
             return fr.face_encodings(arr)[0]
@@ -75,3 +78,13 @@ class TestFaceVectorExtractor(TestCase):
         print("(images contain different people)")
         print("mean: ", diff2.mean())
         print("std: ", diff2.std())
+
+
+class TestFuzzyExtractorFaceRecognition(TestCase):
+
+    def test_init(self) -> FuzzyExtractorFaceRecognition:
+        fx = FuzzyExtractorFaceRecognition()
+
+
+    def test_hash_primary_1(self) -> bytes:
+        pass
