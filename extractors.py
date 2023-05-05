@@ -95,7 +95,7 @@ class FuzzyExtractorFaceRecognition:
     """
 
     def __init__(self, min_images=30,
-                 key_size_bytes=32, d=0.015,
+                 key_size_bytes=32, d=0.03,
                  std_thr=0.03, mean_thr=0.04, alpha=0.5):
         self.min_images = min_images
         self.min_vectors = int(min_images * 0.8)
@@ -273,7 +273,6 @@ class FuzzyExtractorFaceRecognition:
                     out[1] = x
             return out, occurrences
 
-        assert len(face_vectors) > self.min_vectors
         size = int(len(face_vectors) * self.sample_size)
         hashes_un = dict()
         face_vectors = list(face_vectors)
