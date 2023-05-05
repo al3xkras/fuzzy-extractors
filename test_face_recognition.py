@@ -102,19 +102,19 @@ class TestFuzzyExtractorFaceRecognition(TestCase):
         print(elon[0])
 
     def test_primary_hash_equality_for_the_same_person(self):
-        c=Cache
-        cache_names=[
+        c = Cache
+        cache_names = [
             "test_primary_hash_elon1",
             "test_primary_hash_elon2"
         ]
         face_vectors = c.get_cached_object(cache_names[0])
         face_vectors1 = c.get_cached_object(cache_names[1])
 
-        if face_vectors is None:
+        if face_vectors is None or face_vectors1 is None:
             face_vectors = fun("ElonMusk", 30)
             face_vectors1 = fun("ElonMusk", 30)
-            c.cache_object(face_vectors,cache_names[0])
-            c.cache_object(face_vectors1,cache_names[1])
+            c.cache_object(face_vectors, cache_names[0])
+            c.cache_object(face_vectors1, cache_names[1])
 
         elon = fx.hash_primary(fx.reject_face_vector_outliers(face_vectors))
         elon1 = fx.hash_primary(fx.reject_face_vector_outliers(face_vectors1))
@@ -125,9 +125,23 @@ class TestFuzzyExtractorFaceRecognition(TestCase):
         self.assertEqual(elon, elon1)
 
     def test_primary_hash_inequality_for_different_people(self):
+        c = Cache
+        cache_names = [
+            "test_primary_hash_elon3",
+            "test_primary_hash_nile1"
+        ]
 
-        elon = fx.hash_primary(fx.reject_face_vector_outliers(fun("ElonMusk", 20)))
-        nile = fx.hash_primary(fx.reject_face_vector_outliers(fun("NileRed", 20)))
+        face_vectors_elon = c.get_cached_object(cache_names[0])
+        face_vectors_nile = c.get_cached_object(cache_names[1])
+
+        if face_vectors_elon is None or face_vectors_nile is None:
+            face_vectors_elon = fun("ElonMusk", 30)
+            face_vectors_nile = fun("NileRed", 30)
+            c.cache_object(face_vectors_elon, cache_names[0])
+            c.cache_object(face_vectors_nile, cache_names[1])
+
+        elon = fx.hash_primary(fx.reject_face_vector_outliers(face_vectors_elon))
+        nile = fx.hash_primary(fx.reject_face_vector_outliers(face_vectors_nile))
 
         print(elon)
         print(nile)
@@ -148,19 +162,37 @@ class TestFuzzyExtractorFaceRecognition(TestCase):
         print("Unique hashes (for %s):\n" % name, unique_hashes, "\n")
 
     def test_hash_primary(self):
+        c = Cache
+        cache_names = [
+            "test_primary_hash_elon4"
+        ]
         name = "ElonMusk"
-        population_size = 55
-        face_vectors = fun(name, population_size)
+        population_size = 75
+        size = 75
+        face_vectors = c.get_cached_object(cache_names[0])
+
+        if face_vectors is None:
+            face_vectors = fun(name, population_size)
+            c.cache_object(face_vectors, cache_names[0])
+
+        #face_vectors = np.array(random.sample([x for x in face_vectors],size))
         face_vectors = fx.reject_face_vector_outliers(face_vectors)
         hash_val = fx.hash_primary(face_vectors)
         print(hash_val)
 
     def test_remove_face_vector_outliers(self):
+        c = Cache
+        cache_names = [
+            "test_primary_hash_elon4"
+        ]
+        face_vectors = c.get_cached_object(cache_names[0])
+        if face_vectors is None:
+            face_vectors = fun("NileRed", 20)
+            c.cache_object(face_vectors, cache_names[0])
 
-        elon = fun("NileRed", 20)
-        print("length before rejecting outliers: ", len(elon))
+        print("length before rejecting outliers: ", len(face_vectors))
 
-        elon1 = fx.reject_face_vector_outliers(elon)
+        elon1 = fx.reject_face_vector_outliers(face_vectors)
         print("length after rejecting outliers: ", len(elon1))
 
         elon2 = fx.reject_face_vector_outliers(elon1)

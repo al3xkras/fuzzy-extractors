@@ -77,22 +77,6 @@ class FaceVectorExtractor:
 
 
 class FuzzyExtractorFaceRecognition:
-    """
-    In order for fuzzy extractors to generate strong keys from biometric and other noisy data, cryptography paradigms will be applied to this biometric data. These paradigms:
-
-    (1) Limit the number of assumptions about the content of the biometric data
-     (this data comes from a variety of sources; so, in order to avoid exploitation
-     by an adversary, it's best to assume the input is unpredictable).
-
-    (2) Apply usual cryptographic techniques to the input. (Fuzzy extractors convert
-     biometric data into secret, uniformly random, and reliably reproducible random strings.)
-
-    These techniques can also have other broader applications for other type
-    of noisy inputs such as approximative data from human memory, images used
-    as passwords, and keys from quantum channels.[2] Fuzzy extractors also
-    have applications in the proof of impossibility of the strong notions of
-    privacy with regard to statistical databases.[3]
-    """
 
     def __init__(self, min_images=30,
                  key_size_bytes=32, d=0.03,
@@ -256,7 +240,7 @@ class FuzzyExtractorFaceRecognition:
         1. Perform 1000 independent tests and write unique hashes to a collection:
         2. Select a random sample from the list of face vectors
         3. Select top-2 hashes that have the highest probability of occurrence
-        4. If any value has a probability of occurrence p>=0.6, return this value
+        4. If any value has a probability of occurrence p>=p_a_min, return this value
         5. Otherwise, find hash value with the highest entropy and return it.
             (if both values have equal entropy, return the value by probabilities from step 4.)
         """
