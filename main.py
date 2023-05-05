@@ -4,14 +4,15 @@ from extractors import FrameIterator, FaceVectorExtractor
 
 names = [
     "NileRed",
-    "ElonMusk"
+    "ElonMusk",
+    "Alexander"
 ]
 
 
 def extract_video_faces(name: str):
     fi = FrameIterator("./videos/%s.mp4" % name)
     ex = FaceVectorExtractor()
-    k = 30
+    k = 10
     i = 0
     i_max = 75*k
     j = 0
@@ -35,4 +36,4 @@ def extract_video_faces(name: str):
 
 
 if __name__ == '__main__':
-    extract_video_faces(names[1])
+    extract_video_faces(names[2])

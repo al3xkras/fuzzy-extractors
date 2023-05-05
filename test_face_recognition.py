@@ -117,18 +117,28 @@ class TestFuzzyExtractorFaceRecognition(TestCase):
 
         self.assertNotEqual(elon, nile)
 
-    def test_hash_primary(self):
+    def test__hash_primary(self):
         name="ElonMusk"
-        trials = 250
+        trials = 1500
         population_size=55
-        faces = [x for x in fun(name, population_size)]
-        samp_size = int(len(faces)*0.7)
+        face_vectors = [x for x in fun(name, population_size)]
+        samp_size = int(len(face_vectors)*0.7)
         unique_hashes=dict()
         for i in range(trials):
-            samp = random.sample(faces,samp_size)
-            elon = fx.hash_primary(fx.reject_face_vector_outliers(samp))
+            samp = random.sample(face_vectors,samp_size)
+            elon = fx._hash_primary(fx.reject_face_vector_outliers(samp))
             unique_hashes[elon]=unique_hashes.get(elon,0)+1
         print("Unique hashes (for %s):\n"%name,unique_hashes,"\n")
+
+    def test_hash_primary(self):
+        name="ElonMusk"
+        population_size=55
+        face_vectors = fun(name, population_size)
+        face_vectors=fx.reject_face_vector_outliers(face_vectors)
+        hash_val = fx.hash_primary(face_vectors)
+        print(hash_val)
+
+
 
     def test_remove_face_vector_outliers(self):
 

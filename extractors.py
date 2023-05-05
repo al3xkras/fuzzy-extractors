@@ -1,3 +1,6 @@
+import math
+import random
+
 import PIL.Image
 import face_recognition.api as fr
 import numpy as np
@@ -91,14 +94,19 @@ class FuzzyExtractorFaceRecognition:
     privacy with regard to statistical databases.[3]
     """
 
-    def __init__(self, conf_int=0.01, min_images=5, key_size_bytes=32):
-        self.conf_int = conf_int
+    def __init__(self, min_images=30,
+                 key_size_bytes=32, d=0.015,
+                 std_thr=0.03, mean_thr=0.04, alpha=0.5):
         self.min_images = min_images
+        self.min_vectors = int(min_images * 0.8)
         self.key_size_bytes = key_size_bytes
-        self.d = 0.01
-        self.std_thr = 0.03
-        self.mean_thr = 0.04
-        self.alpha = 0.5
+        self.d = d
+        self.std_thr = std_thr
+        self.mean_thr = mean_thr
+        self.alpha = alpha
+        self.n_tests = 1500
+        self.sample_size = 0.7
+        self.p_a_min = 0.6
 
     def preprocess_images(self, images: np.ndarray[np.ndarray | Image]) -> np.ndarray[np.ndarray]:
         """
@@ -182,7 +190,7 @@ class FuzzyExtractorFaceRecognition:
         img_mean = np.array([face_vectors[:, i].mean() for i in range(face_vectors.shape[1])], dtype=float)
         return img_mean, img_std
 
-    def hash_primary(self, face_vectors: np.ndarray[np.ndarray]) -> bytes:
+    def _hash_primary(self, face_vectors: np.ndarray[np.ndarray]) -> bytes:
         """
         Create a primary hash value, based on the list of face vectors
         - The hash function should be collision resistant
@@ -233,9 +241,63 @@ class FuzzyExtractorFaceRecognition:
         actual_landmarks = f(img_mean)
         return self.hash_format(actual_landmarks.tobytes('C'))
 
+    @staticmethod
+    def entropy(bytez: bytes) -> float:
+        bytes_dict = dict()
+        for b in bytez:
+            bytes_dict[b] = bytes_dict.get(b, 0) + 1
+        for b in bytes_dict:
+            bytes_dict[b] /= len(bytez)
+        return -sum(x * math.log2(x) for x in bytes_dict.values())
+
+    def hash_primary(self, face_vectors: np.ndarray[np.ndarray]) -> bytes:
+        """
+        Probability-based version of the _hash_primary method:
+        1. Perform 1000 independent tests and write unique hashes to a collection:
+        2. Select a random sample from the list of face vectors
+        3. Select top-2 hashes that have the highest probability of occurrence
+        4. If any value has a probability of occurrence p>=0.6, return this value
+        5. Otherwise, find hash value with the highest entropy and return it.
+            (if both values have equal entropy, return the value by probabilities from step 4.)
+        """
+
+        def dict_t2(d: dict):
+            out = [None, None]
+            occurrences = [0, 0]
+            for x in d:
+                if d[x] > occurrences[0]:
+                    occurrences[0] = d[x]
+                    out[0] = x
+                elif d[x] > occurrences[1]:
+                    occurrences[1] = d[x]
+                    out[1] = x
+            return out, occurrences
+
+        assert len(face_vectors) > self.min_vectors
+        size = int(len(face_vectors) * self.sample_size)
+        hashes_un = dict()
+        face_vectors = list(face_vectors)
+        for _ in range(self.n_tests):
+            sample = np.array(random.sample(face_vectors, size))
+            hash_val = self._hash_primary(sample)
+            hashes_un[hash_val] = hashes_un.get(hash_val, 0) + 1
+
+        hashes, vals = dict_t2(hashes_un)
+        if vals[0] / sum(vals) >= self.p_a_min:
+            return hashes[0]
+        if vals[1] / sum(vals) >= self.p_a_min:
+            return hashes[1]
+        e1 = self.entropy(hashes[0])
+        e2 = self.entropy(hashes[1])
+        if e1 == e2:
+            return hashes[0] if vals[0] > vals[1] else hashes[1]
+        if e1 > e2:
+            return hashes[0]
+        return hashes[1]
+
     def hash_format(self, key: bytes) -> bytes:
         """
-        expand the hash value to the required key length
+        Expand the hash value to the required key length
         """
         if len(key) == self.key_size_bytes:
             return key
