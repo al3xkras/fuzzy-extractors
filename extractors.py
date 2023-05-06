@@ -177,7 +177,7 @@ class FuzzyExtractorFaceRecognition:
     def _hash_primary(self, face_vectors: np.ndarray[np.ndarray]) -> bytes:
         """
         Create a primary hash value, based on the list of face vectors
-        - The hash function should be collision resistant
+        - The hash function is not collision resistant
           (the hash value of 'similar' face vectors should be equal)
          - Given the hash value, it might be possible to retrieve the actual face landmarks
            (non-resistant to the first preimage)
@@ -186,7 +186,7 @@ class FuzzyExtractorFaceRecognition:
             to find a different face vector with equal or similar hash)
 
         Implementation description:
-        1. Consider a hypercube of a given edge length in the 128-dimensional space (D) with the default
+        1. Consider a hypercube with a given edge length in the 128-dimensional space (D) with default
             Euclidean metrics
         2. D is uniformly divided into hypercubes, without gaps
         3. Then, if a certain face vector is located on a hypercube edge,
@@ -205,7 +205,7 @@ class FuzzyExtractorFaceRecognition:
         This method is not collision resistant, and is not a secure cryptographic hash function.
         It is a Monte-Carlo algorithm to estimate the actual private key of a person, therefore it has a fixes
             execution time, however it may output incorrect answers with a certain probability
-            (1)(this probability is measured in the test cases, contained in this application)
+            todo (1)(this probability is measured in the test cases, contained in this application)
         """
         img_mean, img_std = self.get_image_statistics(face_vectors)
         stat = sum(x > self.std_thr for x in img_std)
@@ -221,9 +221,8 @@ class FuzzyExtractorFaceRecognition:
             return (k + 0.5) * self.d
 
         f = np.vectorize(f)
-
-        actual_landmarks = f(img_mean)
-        return self.hash_format(actual_landmarks.tobytes('C'))
+        actual_landmarks = f(img_mean).tobytes('C')
+        return self.hash_format(actual_landmarks)
 
     @staticmethod
     def entropy(bytez: bytes) -> float:
@@ -236,13 +235,17 @@ class FuzzyExtractorFaceRecognition:
 
     def hash_primary(self, face_vectors: np.ndarray[np.ndarray]) -> bytes:
         """
-        Probability-based version of the _hash_primary method:
+        Probability-based (error correction) of the _hash_primary method:
+            (this method is implemented in order to avoid possible errors, when face vectors are located close to a
+            side of a specific hypercube. Because Euclidean metrics is naturally used to compare face vectors, the
+            _hash_primary method may sometimes map values to an incorrect hypercube center, which will cause errors.
+            this can be avoided by using probabilistic methods, implemented in this function.)
         1. Perform 1000 independent tests and write unique hashes to a collection:
         2. Select a random sample from the list of face vectors
         3. Select top-2 hashes that have the highest probability of occurrence
         4. If any value has a probability of occurrence p>=p_a_min, return this value
-        5. Otherwise, find hash value with the highest entropy and return it.
-            (if both values have equal entropy, return the value by probabilities from step 4.)
+        5. Otherwise, find a hash value with the highest entropy and return it.
+            (if both values have equal entropy, return the value by probabilities from the step 4.)
         """
 
         def dict_t2(d: dict):
