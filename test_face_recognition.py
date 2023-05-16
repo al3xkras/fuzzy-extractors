@@ -1,3 +1,4 @@
+import os.path
 import random
 from unittest import TestCase
 import PIL.Image
@@ -9,9 +10,17 @@ from extractors import FaceVectorExtractor
 from extractors import FuzzyExtractorFaceRecognition
 from logger import Logger
 from cache import Cache
+from PIL import Image
 
 fx = FuzzyExtractorFaceRecognition(min_images=20)
+
 fun = lambda person, n=20: fx.preprocess_images(np.array(random.sample(TestCases.getImagesByTagPrefix(person), n)))
+
+
+def fun1(person, n=20):
+    images = np.array(random.sample(TestCases.getImagesByTagPrefix(person), n))
+    return images, fx.preprocess_images(images)
+
 
 print = lambda *o: Logger.info(" ".join(map(str, o))) if len(o) > 0 else Logger.info("\n")
 
@@ -150,9 +159,17 @@ class TestFuzzyExtractorFaceRecognition(TestCase):
 
     def test__hash_primary(self):
         name = "ElonMusk"
+        c = Cache
+        cache_names = [
+            "test_primary_hash_elon4"
+        ]
         trials = 1500
-        population_size = 55
-        face_vectors = [x for x in fun(name, population_size)]
+        population_size = 50
+        face_vectors = c.get_cached_object(cache_names[0])
+        if face_vectors is None:
+            face_vectors = fun(name, population_size)
+            c.cache_object(face_vectors, cache_names[0])
+        face_vectors = [x for x in face_vectors]
         samp_size = int(len(face_vectors) * 0.7)
         unique_hashes = dict()
         for i in range(trials):
@@ -161,42 +178,46 @@ class TestFuzzyExtractorFaceRecognition(TestCase):
             unique_hashes[elon] = unique_hashes.get(elon, 0) + 1
         print("Unique hashes (for %s):\n" % name, unique_hashes, "\n")
 
-    def test_hash_primary(self):
-        c = Cache
-        cache_names = [
-            "test_primary_hash_elon4"
-        ]
-        name = "ElonMusk"
-        population_size = 75
-        size = 75
-        face_vectors = c.get_cached_object(cache_names[0])
-
-        if face_vectors is None:
-            face_vectors = fun(name, population_size)
-            c.cache_object(face_vectors, cache_names[0])
-
-        #face_vectors = np.array(random.sample([x for x in face_vectors],size))
-        face_vectors = fx.reject_face_vector_outliers(face_vectors)
-        hash_val = fx.hash_primary(face_vectors)
-        print(hash_val)
-
     def test_remove_face_vector_outliers(self):
         c = Cache
         cache_names = [
-            "test_primary_hash_elon4"
+            "test_remove_face_vector_outliers"
         ]
-        face_vectors = c.get_cached_object(cache_names[0])
-        if face_vectors is None:
-            face_vectors = fun("NileRed", 20)
-            c.cache_object(face_vectors, cache_names[0])
+        cache = c.get_cached_object(cache_names[0])
+
+        if cache is None:
+            images,face_vectors = fun1("ElonMusk", 30)
+            c.cache_object((images,face_vectors), cache_names[0])
+        else:
+            images, face_vectors = cache
 
         print("length before rejecting outliers: ", len(face_vectors))
 
         elon1 = fx.reject_face_vector_outliers(face_vectors)
+        accepted1 = [
+            images[i] for i,v in enumerate(face_vectors) if v in elon1
+        ]
         print("length after rejecting outliers: ", len(elon1))
 
         elon2 = fx.reject_face_vector_outliers(elon1)
+        accepted2 = [
+            images[i] for i, v in enumerate(face_vectors) if v in elon2
+        ]
         print("length after rejecting twice: ", len(elon2))
+
+        def write_tmp_images(imgs,path:str):
+            path = os.path.dirname(__file__)+path
+            try:
+                os.makedirs(path)
+            except FileExistsError:
+                pass
+            for i,img in enumerate(imgs):
+                img_=Image.fromarray(img).convert("RGB")
+                img_.save(os.path.join(path,"image%d.png"%i))
+
+        write_tmp_images(images, "/tmp/images/initial")
+        write_tmp_images(accepted1, "/tmp/images/no_outliers")
+        write_tmp_images(accepted2, "/tmp/images/iterated_twice")
 
     def test_generate_private_key(self):
         pass

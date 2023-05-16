@@ -119,6 +119,19 @@ class FuzzyExtractorFaceRecognition:
         lst = [x for x in lst if x is not None]
         return np.array(lst)
 
+    @staticmethod
+    def _get_outliers(data, var_max=0.5):
+        if var_max <= 0:
+            return data
+
+        filter_ = np.array([x[0] for x in data])
+        # print("mean,std = ",filter_.mean(),filter_.std())
+        filter_ = abs(filter_ - np.mean(filter_)) >= var_max * np.std(filter_)
+        # print(filter_)
+        rejected = [data[i] for i in range(len(data)) if filter_[i]]
+
+        return rejected
+
     def reject_face_vector_outliers(self, face_vectors: np.ndarray[np.ndarray]) -> np.ndarray[np.ndarray]:
         """
         Reject 'outlier' images (such images, that have a comparably high standard deviation, and can not be used for the
@@ -137,33 +150,21 @@ class FuzzyExtractorFaceRecognition:
         def f(v1: np.ndarray, v2: np.ndarray) -> float:
             return (abs(v1 - v2)).mean()
 
-        def get_outliers(data, var_max=0.7):
-            if var_max <= 0:
-                return data
-
-            filter_ = np.array([x[0] for x in data])
-            # print("mean,std = ",filter_.mean(),filter_.std())
-            filter_ = abs(filter_ - np.mean(filter_)) >= var_max * np.std(filter_)
-            # print(filter_)
-            rejected = [data[i] for i in range(len(data)) if filter_[i]]
-
-            return rejected
-
         for i, j in combinations(range(len(face_vectors)), 2):
             a, b = face_vectors[i], face_vectors[j]
             f_ = f(a, b)
             # print("face vectors statistic:",i,j,f_)
             sample.append([f_, i, j])
 
-        sample_ = {}
-        for _, i, j in get_outliers(sample):
-            sample_[i] = sample_.get(i, 0) + 1
+        vec_sample = {}
+        for _, i, j in self._get_outliers(sample):
+            vec_sample[i] = vec_sample.get(i, 0) + 1
 
-        sample_ = get_outliers([(sample_[x], x) for x in sample_])
-        sample_ = set([x[1] for x in sample_])
+        vec_sample = self._get_outliers([(vec_sample[x], x) for x in vec_sample])
+        vec_sample = set([x[1] for x in vec_sample])
 
         # print(len(sample_))
-        return np.array([x for i, x in enumerate(face_vectors) if not i in sample_])
+        return np.array([x for i, x in enumerate(face_vectors) if i not in vec_sample])
 
     def get_image_statistics(self, face_vectors: np.ndarray[np.ndarray]) -> tuple[np.ndarray, np.ndarray]:
         """
@@ -203,7 +204,7 @@ class FuzzyExtractorFaceRecognition:
             (2)(if the list of face vectors does not contain outliers)
 
         This method is not collision resistant, and is not a secure cryptographic hash function.
-        It is a Monte-Carlo algorithm to estimate the actual private key of a person, therefore it has a fixes
+        It is a Monte-Carlo algorithm to estimate the actual private key of a person, therefore it has a fixed
             execution time, however it may output incorrect answers with a certain probability
             todo (1)(this probability is measured in the test cases, contained in this application)
         """
