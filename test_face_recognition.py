@@ -133,6 +133,42 @@ class TestFuzzyExtractorFaceRecognition(TestCase):
 
         self.assertEqual(elon, elon1)
 
+    def test_primary_hash_equality_for_the_same_person2(self):
+        """
+        - Given 3 different videos that contain the same person, check whether
+            the primary hash is equal for all 3 videos
+        """
+        c = Cache
+        cache_names = [
+            "test_primary_hash_equality_for_the_same_person21",
+            "test_primary_hash_equality_for_the_same_person22",
+            "test_primary_hash_equality_for_the_same_person23"
+        ]
+
+        face_vectors = c.get_cached_object(cache_names[0])
+        face_vectors1 = c.get_cached_object(cache_names[1])
+        face_vectors2 = c.get_cached_object(cache_names[2])
+
+        if face_vectors is None:
+            face_vectors = fun("test1_1", 40)
+            c.cache_object(face_vectors, cache_names[0])
+
+        if face_vectors1 is None:
+            face_vectors1 = fun("test1_2", 40)
+            c.cache_object(face_vectors1, cache_names[1])
+
+        if face_vectors2 is None:
+            face_vectors2 = fun("test1_3", 40)
+            c.cache_object(face_vectors2, cache_names[2])
+
+        h1 = fx.hash_primary(fx.reject_face_vector_outliers(face_vectors))
+        h2 = fx.hash_primary(fx.reject_face_vector_outliers(face_vectors1))
+        h3 = fx.hash_primary(fx.reject_face_vector_outliers(face_vectors2))
+
+        print(h1)
+        print(h2)
+        print(h3)
+
     def test_primary_hash_inequality_for_different_people(self):
         c = Cache
         cache_names = [

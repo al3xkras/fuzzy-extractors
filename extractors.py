@@ -80,7 +80,7 @@ class FuzzyExtractorFaceRecognition:
 
     def __init__(self, min_images=30,
                  key_size_bytes=32, d=0.03,
-                 std_thr=0.03, mean_thr=0.04, alpha=0.5):
+                 std_thr=0.03, mean_thr=0.04, alpha=0.5,):
         self.min_images = min_images
         self.min_vectors = int(min_images * 0.8)
         self.key_size_bytes = key_size_bytes
@@ -91,6 +91,7 @@ class FuzzyExtractorFaceRecognition:
         self.n_tests = 1500
         self.sample_size = 0.7
         self.p_a_min = 0.6
+        self.len_hashes_un_max = 3
 
     def preprocess_images(self, images: np.ndarray[np.ndarray | Image]) -> np.ndarray[np.ndarray]:
         """
@@ -269,7 +270,11 @@ class FuzzyExtractorFaceRecognition:
             hash_val = self._hash_primary(sample)
             hashes_un[hash_val] = hashes_un.get(hash_val, 0) + 1
 
+        if len(hashes_un)>self.len_hashes_un_max:
+            raise ValueError("input data rejected")
+
         hashes, vals = dict_t2(hashes_un)
+
         if vals[0] / sum(vals) >= self.p_a_min:
             return hashes[0]
         if vals[1] / sum(vals) >= self.p_a_min:

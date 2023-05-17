@@ -5,16 +5,18 @@ from extractors import FrameIterator, FaceVectorExtractor
 names = [
     "NileRed",
     "ElonMusk",
-    "Alexander"
+    "test1_1",
+    "test1_2",
+    "test1_3",
 ]
 
 
 def extract_video_faces(name: str):
     fi = FrameIterator("./videos/%s.mp4" % name)
     ex = FaceVectorExtractor()
-    k = 10
+    k = 5
     i = 0
-    i_max = 75*k
+    i_max = 50*k
     j = 0
 
     def consumer(img: np.ndarray):
@@ -36,4 +38,4 @@ def extract_video_faces(name: str):
 
 
 if __name__ == '__main__':
-    extract_video_faces(names[2])
+    extract_video_faces(names[3])
