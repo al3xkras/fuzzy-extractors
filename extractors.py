@@ -78,20 +78,37 @@ class FaceVectorExtractor:
 
 class FuzzyExtractorFaceRecognition:
 
-    def __init__(self, min_images=30,
-                 key_size_bytes=32, d=0.03,
-                 std_thr=0.03, mean_thr=0.04, alpha=0.5,):
+    def __init__(self,
+                 min_images=5,
+                 d=0.03,
+                 std_max=0.03,
+                 alpha=0.5,
+                 n_tests=500,
+                 sample_size=0.7,
+                 p_a_min=0.6,
+                 max_unique_hashes=3):
+        """
+        :param min_images: min images to generate the hash (after preprocessing and rejecting outliers)
+        :param d: the accuracy parameter (a positive float value, should be in range: (0,0.25])
+        :param std_max: standard error maximum (if the std is > std_max, the input data will be rejected)
+        :param alpha: the maximum percentage of face vector coordinates that can exceed the std_max threshold.
+            (otherwise the input data will be rejected)
+        :param n_tests: amount of independent tests to perform (hash values to create)
+        :param sample_size: sample size of each test
+        :param p_a_min: If a hash value is produced with a probability >= p_a_min,
+            it will be returned by the method. Otherwise, the entropy of the face vectors will be taken into account.
+        :param max_unique_hashes: max unique hash values allowed to accept the input data
+        """
         self.min_images = min_images
         self.min_vectors = int(min_images * 0.8)
-        self.key_size_bytes = key_size_bytes
         self.d = d
-        self.std_thr = std_thr
-        self.mean_thr = mean_thr
+        self.std_max = std_max
         self.alpha = alpha
-        self.n_tests = 1500
-        self.sample_size = 0.7
-        self.p_a_min = 0.6
-        self.len_hashes_un_max = 3
+        self.n_tests = n_tests
+        self.sample_size = sample_size
+        self.p_a_min = p_a_min
+        self.max_unique_hashes = max_unique_hashes
+        self.key_size_bytes=32
 
     def preprocess_images(self, images: np.ndarray[np.ndarray | Image]) -> np.ndarray[np.ndarray]:
         """
@@ -121,16 +138,18 @@ class FuzzyExtractorFaceRecognition:
         return np.array(lst)
 
     @staticmethod
-    def _get_outliers(data, var_max=0.5):
-        if var_max <= 0:
+    def _get_outliers(data, std_max=0.5):
+        """
+        :param data: the input data (np.array or list) of tuples (items at index 0 are numeric)
+        :param std_max: the maximum variance to determine outliers: values
+            that exceed the maximum variance will be removed from the sample
+        :return: a list of outliers that exceed the var_max parameter
+        """
+        if std_max <= 0:
             return data
-
         filter_ = np.array([x[0] for x in data])
-        # print("mean,std = ",filter_.mean(),filter_.std())
-        filter_ = abs(filter_ - np.mean(filter_)) >= var_max * np.std(filter_)
-        # print(filter_)
+        filter_ = abs(filter_ - np.mean(filter_)) >= std_max * np.std(filter_)
         rejected = [data[i] for i in range(len(data)) if filter_[i]]
-
         return rejected
 
     def reject_face_vector_outliers(self, face_vectors: np.ndarray[np.ndarray]) -> np.ndarray[np.ndarray]:
@@ -148,12 +167,12 @@ class FuzzyExtractorFaceRecognition:
         """
         sample = []
 
-        def f(v1: np.ndarray, v2: np.ndarray) -> float:
+        def mean_diff(v1: np.ndarray, v2: np.ndarray) -> float:
             return (abs(v1 - v2)).mean()
 
         for i, j in combinations(range(len(face_vectors)), 2):
             a, b = face_vectors[i], face_vectors[j]
-            f_ = f(a, b)
+            f_ = mean_diff(a, b)
             # print("face vectors statistic:",i,j,f_)
             sample.append([f_, i, j])
 
@@ -169,8 +188,8 @@ class FuzzyExtractorFaceRecognition:
 
     def get_image_statistics(self, face_vectors: np.ndarray[np.ndarray]) -> tuple[np.ndarray, np.ndarray]:
         """
-        input: a set of face vectors
-        output: array of means, array of standard deviations
+        :param face_vectors: a list of face vectors
+        :return: tuple(list of image means for each coordinate, list of image std for each coordinate)
         """
         img_std = np.array([face_vectors[:, i].std() for i in range(face_vectors.shape[1])], dtype=float)
         img_mean = np.array([face_vectors[:, i].mean() for i in range(face_vectors.shape[1])], dtype=float)
@@ -210,7 +229,7 @@ class FuzzyExtractorFaceRecognition:
             todo (1)(this probability is measured in the test cases, contained in this application)
         """
         img_mean, img_std = self.get_image_statistics(face_vectors)
-        stat = sum(x > self.std_thr for x in img_std)
+        stat = sum(x > self.std_max for x in img_std)
         if stat > self.alpha * len(img_std):
             print(stat, img_std)
             raise ValueError("Std of the images provided is too high. Unable to build a safe primary hash: %d" % stat)
@@ -226,8 +245,23 @@ class FuzzyExtractorFaceRecognition:
         actual_landmarks = f(img_mean).tobytes('C')
         return self.hash_format(actual_landmarks)
 
+    def hash_format(self, key: bytes) -> bytes:
+        """
+        Expand the hash value to the required key length
+        """
+        if len(key) == self.key_size_bytes:
+            return key
+        elif len(key) > self.key_size_bytes:
+            return key[:self.key_size_bytes]
+        key = key + key[:(self.key_size_bytes - len(key))]
+        assert len(key) == self.key_size_bytes
+        return key
+
     @staticmethod
     def entropy(bytez: bytes) -> float:
+        """
+        :return: Shannon's entropy for the input byte sequence
+        """
         bytes_dict = dict()
         for b in bytez:
             bytes_dict[b] = bytes_dict.get(b, 0) + 1
@@ -237,17 +271,19 @@ class FuzzyExtractorFaceRecognition:
 
     def hash_primary(self, face_vectors: np.ndarray[np.ndarray]) -> bytes:
         """
-        Probability-based (error correction) of the _hash_primary method:
-            (this method is implemented in order to avoid possible errors, when face vectors are located close to a
-            side of a specific hypercube. Because Euclidean metrics is naturally used to compare face vectors, the
-            _hash_primary method may sometimes map values to an incorrect hypercube center, which will cause errors.
-            this can be avoided by using probabilistic methods, implemented in this function.)
-        1. Perform 1000 independent tests and write unique hashes to a collection:
-        2. Select a random sample from the list of face vectors
+        Probability-based error correction paired with the _hash_primary method:
+            This method is implemented in order to avoid possible errors, when face vectors are located close to a
+            side of a specific hypercube. Because Euclidean metrics is naturally used by the face_recognition model
+            author to compare face vectors, the _hash_primary method may sometimes
+            map values to an incorrect hypercube center, which might cause mapping mistakes.
+            This can be avoided by using probabilistic methods, implemented in this function:
+        1. Perform X independent tests and write unique hashes to a collection.
+        2. Select a random sample from the population of face vectors
         3. Select top-2 hashes that have the highest probability of occurrence
-        4. If any value has a probability of occurrence p>=p_a_min, return this value
+        4. If the amount of unique hash values is > $len_hashes_un_max$, reject the input
+        4. If any value has a probability of occurrence p>=p_a_min, return the hash code
         5. Otherwise, find a hash value with the highest entropy and return it.
-            (if both values have equal entropy, return the value by probabilities from the step 4.)
+            (if both values have equal entropy, return a value which has a higher probability of occurrence)
         """
 
         def dict_t2(d: dict):
@@ -270,7 +306,7 @@ class FuzzyExtractorFaceRecognition:
             hash_val = self._hash_primary(sample)
             hashes_un[hash_val] = hashes_un.get(hash_val, 0) + 1
 
-        if len(hashes_un)>self.len_hashes_un_max:
+        if len(hashes_un) > self.max_unique_hashes:
             raise ValueError("input data rejected")
 
         hashes, vals = dict_t2(hashes_un)
@@ -287,18 +323,6 @@ class FuzzyExtractorFaceRecognition:
             return hashes[0]
         return hashes[1]
 
-    def hash_format(self, key: bytes) -> bytes:
-        """
-        Expand the hash value to the required key length
-        """
-        if len(key) == self.key_size_bytes:
-            return key
-        elif len(key) > self.key_size_bytes:
-            return key[:self.key_size_bytes]
-        key = key + key[:(self.key_size_bytes - len(key))]
-        assert len(key) == self.key_size_bytes
-        return key
-
     def hash_secondary(self, hash_primary: bytes) -> bytes:
         """
          Create a secondary hash value, based on the primary hash value: (possible algorithms: SHA256)
@@ -311,7 +335,7 @@ class FuzzyExtractorFaceRecognition:
         """
         sha256 = hashlib.sha256()
         sha256.update(hash_primary)
-        return self.hash_format(sha256.digest())
+        return sha256.digest()
 
     def generate_private_key(self, images: np.ndarray[np.ndarray]) -> bytes:
         vectors = self.preprocess_images(images)
