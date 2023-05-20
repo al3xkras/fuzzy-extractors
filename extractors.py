@@ -1,13 +1,13 @@
 import math
 import random
 
-import PIL.Image
 import face_recognition.api as fr
 import numpy as np
 from PIL.Image import Image
 import cv2
 import hashlib
 from itertools import combinations
+from reedsolo import RSCodec
 
 Video = cv2.VideoCapture
 
@@ -80,10 +80,10 @@ class FuzzyExtractorFaceRecognition:
 
     def __init__(self,
                  min_images=5,
-                 d=0.03,
+                 d=0.055,
                  std_max=0.03,
                  alpha=0.5,
-                 n_tests=500,
+                 n_tests=250,
                  sample_size=0.7,
                  p_a_min=0.6,
                  max_unique_hashes=3):
@@ -108,9 +108,11 @@ class FuzzyExtractorFaceRecognition:
         self.sample_size = sample_size
         self.p_a_min = p_a_min
         self.max_unique_hashes = max_unique_hashes
-        self.key_size_bytes=32
+        self.key_size_bytes = 32
+        self.check_symbols_count = 64
+        self.rsc = RSCodec(nsym=self.check_symbols_count)
 
-    def preprocess_images(self, images: np.ndarray[np.ndarray | Image]) -> np.ndarray[np.ndarray]:
+    def _preprocess_images(self, images: np.ndarray[np.ndarray | Image]) -> np.ndarray[np.ndarray]:
         """
         1. convert images to numpy (mode: RGB)
         2. locate faces; remove images that do not contain any face
@@ -179,6 +181,7 @@ class FuzzyExtractorFaceRecognition:
         vec_sample = {}
         for _, i, j in self._get_outliers(sample):
             vec_sample[i] = vec_sample.get(i, 0) + 1
+            vec_sample[j] = vec_sample.get(j, 0) + 1
 
         vec_sample = self._get_outliers([(vec_sample[x], x) for x in vec_sample])
         vec_sample = set([x[1] for x in vec_sample])
@@ -186,7 +189,7 @@ class FuzzyExtractorFaceRecognition:
         # print(len(sample_))
         return np.array([x for i, x in enumerate(face_vectors) if i not in vec_sample])
 
-    def get_image_statistics(self, face_vectors: np.ndarray[np.ndarray]) -> tuple[np.ndarray, np.ndarray]:
+    def _image_stats(self, face_vectors: np.ndarray[np.ndarray]) -> tuple[np.ndarray, np.ndarray]:
         """
         :param face_vectors: a list of face vectors
         :return: tuple(list of image means for each coordinate, list of image std for each coordinate)
@@ -228,7 +231,7 @@ class FuzzyExtractorFaceRecognition:
             execution time, however it may output incorrect answers with a certain probability
             todo (1)(this probability is measured in the test cases, contained in this application)
         """
-        img_mean, img_std = self.get_image_statistics(face_vectors)
+        img_mean, img_std = self._image_stats(face_vectors)
         stat = sum(x > self.std_max for x in img_std)
         if stat > self.alpha * len(img_std):
             print(stat, img_std)
@@ -239,22 +242,18 @@ class FuzzyExtractorFaceRecognition:
             res = val - k * self.d
             if res == 0:
                 raise ValueError
-            return (k + 0.5) * self.d
+            return 2 * k + 1
+
+        def to_byte(val: int) -> bytes:
+            assert -128 <= val < 128
+            return int(val + 128).to_bytes(1, "little")
 
         f = np.vectorize(f)
-        actual_landmarks = f(img_mean).tobytes('C')
+        #actual_landmarks = f(img_mean).tobytes('C')
+        actual_landmarks = b"".join([to_byte(x) for x in f(img_mean)])
         return self.hash_format(actual_landmarks)
 
     def hash_format(self, key: bytes) -> bytes:
-        """
-        Expand the hash value to the required key length
-        """
-        if len(key) == self.key_size_bytes:
-            return key
-        elif len(key) > self.key_size_bytes:
-            return key[:self.key_size_bytes]
-        key = key + key[:(self.key_size_bytes - len(key))]
-        assert len(key) == self.key_size_bytes
         return key
 
     @staticmethod
@@ -321,9 +320,13 @@ class FuzzyExtractorFaceRecognition:
             return hashes[0] if vals[0] > vals[1] else hashes[1]
         if e1 > e2:
             return hashes[0]
-        return hashes[1]
+        return hashes[random.randint(0, 1)]
 
-    def hash_secondary(self, hash_primary: bytes) -> bytes:
+    def get_check_symbols(self, hash_primary: bytes) -> bytes:
+        rsc = RSCodec(self.check_symbols_count)
+        return rsc.encode(hash_primary)[len(hash_primary):]
+
+    def hash_secondary(self, hash_primary: bytes, check_symbols: bytes) -> bytes:
         """
          Create a secondary hash value, based on the primary hash value: (possible algorithms: SHA256)
          - map similar within a confidence interval primary hash codes to equal secondary codes
@@ -333,11 +336,14 @@ class FuzzyExtractorFaceRecognition:
 
          This method uses built-in implementation of the SHA256 secure hash algorithm.
         """
+        rsc = self.rsc
         sha256 = hashlib.sha256()
-        sha256.update(hash_primary)
+        hash_ = rsc.decode(hash_primary + check_symbols)[0]
+
+        sha256.update(hash_)
         return sha256.digest()
 
-    def generate_private_key(self, images: np.ndarray[np.ndarray]) -> bytes:
-        vectors = self.preprocess_images(images)
+    def generate_private_key(self, images: np.ndarray[np.ndarray], check_symbols: bytes) -> bytes:
+        vectors = self._preprocess_images(images)
         vectors = self.reject_face_vector_outliers(vectors)
-        return self.hash_secondary(self.hash_primary(vectors))
+        return self.hash_secondary(self.hash_primary(vectors), check_symbols)
