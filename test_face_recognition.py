@@ -12,6 +12,7 @@ from logger import Logger
 from cache import Cache
 from PIL import Image
 from reedsolo import ReedSolomonError
+
 fx = FuzzyExtractorFaceRecognition(min_images=20)
 
 fun = lambda person, n=20: fx._preprocess_images(np.array(random.sample(TestCases.getImagesByTagPrefix(person), n)))
@@ -311,10 +312,10 @@ class TestFuzzyExtractorFaceRecognition(TestCase):
 
         print(len(check_symbols))
 
-        h11 = fx.hash_secondary(h1,check_symbols)
-        h12 = fx.hash_secondary(h2,check_symbols)
-        h13 = fx.hash_secondary(h3,check_symbols)
-        h14 = fx.hash_secondary(h4,check_symbols)
+        h11 = fx.hash_secondary(h1, check_symbols)
+        h12 = fx.hash_secondary(h2, check_symbols)
+        h13 = fx.hash_secondary(h3, check_symbols)
+        h14 = fx.hash_secondary(h4, check_symbols)
 
         print(h11.hex())
         print(h12.hex())
@@ -347,19 +348,19 @@ class TestFuzzyExtractorFaceRecognition(TestCase):
         check_symbols2 = fx.get_check_symbols(h2)
 
         print()
-        print("Hash for Elon:    ",h1.hex())
-        print("Hash for NileRed: ",h2.hex())
+        print("Hash for Elon:    ", h1.hex())
+        print("Hash for NileRed: ", h2.hex())
         print()
         print(check_symbols1.hex())
         print()
         print(check_symbols2.hex())
 
         print()
-        print(len(h1.hex()),len(h2.hex()))
-        print(len(check_symbols1.hex()),len(check_symbols2.hex()))
+        print(len(h1.hex()), len(h2.hex()))
+        print(len(check_symbols1.hex()), len(check_symbols2.hex()))
 
-        h11=b""
-        h12=b""
+        h11 = b""
+        h12 = b""
         try:
             h11 = fx.hash_secondary(h1, check_symbols2)
             self.fail()
@@ -370,7 +371,7 @@ class TestFuzzyExtractorFaceRecognition(TestCase):
             self.fail()
         except ReedSolomonError:
             pass
-        print("hash1:",h11.hex())
-        print("hash2:",h12.hex())
-        self.assertEqual(h11,b'')
-        self.assertEqual(h12,b'')
+        print("hash1:", h11.hex())
+        print("hash2:", h12.hex())
+        self.assertEqual(h11, b'')
+        self.assertEqual(h12, b'')

@@ -367,12 +367,12 @@ class FuzzyExtractorFaceRecognition:
         if log:
             print("Computing a secondary hash value")
         rsc = self.rsc
-        sha256 = hashlib.sha256()
+        sha = hashlib.sha512()
         hash_ = rsc.decode(hash_primary + check_symbols)[0]
         if salt is not None:
             hash_ = hash_ + salt
-        sha256.update(hash_)
-        return sha256.digest()
+        sha.update(hash_)
+        return sha.digest()
 
     def recover_private_key(
             self,
