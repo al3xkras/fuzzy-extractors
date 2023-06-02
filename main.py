@@ -2,7 +2,7 @@ import numpy as np
 import typer
 from base64 import b64encode, b64decode
 
-#app = typer.Typer()
+app = typer.Typer()
 
 from extractors import *
 
@@ -15,27 +15,22 @@ names = [
 ]
 
 
-#@app.command()
-def extract_video_faces(name: str, d_frames=5, max_images=50, prefix=False):
-    if bool(prefix):
-        name = "./videos/%s.mp4" % name
-        print(name)
-    fi = FrameIterator(name)
+@app.command()
+def extract_video_faces(name: str):
+    fi = FrameIterator("./videos/%s.mp4" % name)
     ex = FaceVectorExtractor()
-    k = int(d_frames)
+    k = 2
     i = 0
-    i_max = int(max_images) * k
+    i_max = 50*k
     j = 0
 
     def consumer(img: np.ndarray):
         nonlocal i, j
-
         if i > i_max:
             return False
         i += 1
         if i % k != 0:
             return True
-        print("Extracting image: %d" % j)
         try:
             ex.get_face_image(img)
             fi.save_image(img, "./images/%s%d.png" % (name, j))
@@ -53,15 +48,17 @@ def fuzzy_extractor(
         check_symbols: str = None,
         salt: str = None,
         std_max=0.7,
-        d=0.06,
+        d=0.1,
         max_unique_hashes=-1,
         p_a_min=0.6,
         check_symbols_count=32,
         n_tests=250,
         sample_size=0.7,
         min_images=1,
-        alpha=0.5):
+        alpha=0.5,
+        max_images=30):
 
+    max_images = int(max_images)
     args = {
         "std_max":float(std_max),
         "d":float(d),
@@ -78,7 +75,6 @@ def fuzzy_extractor(
     extractor = FuzzyExtractorFaceRecognition(**args)
     j = 0
     images = []
-    max_images = 5
     is_none = check_symbols is None
     salt = b64decode(salt) if salt is not None else None
     check_symbols = b64decode(check_symbols) if not is_none else None
@@ -114,5 +110,4 @@ def fuzzy_extractor(
 
 
 if __name__ == '__main__':
-    #app()
-    extract_video_faces("test1_4_a",prefix=True,d_frames=2)
+    app()

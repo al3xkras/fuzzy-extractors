@@ -83,10 +83,10 @@ class FuzzyExtractorFaceRecognition:
 
     def __init__(self,
                  std_max=0.7,
-                 d=0.055,
+                 d=0.1,
                  max_unique_hashes=-1,
                  p_a_min=0.6,
-                 check_symbols_count=64,
+                 check_symbols_count=32,
                  n_tests=250,
                  sample_size=0.8,
                  min_images=5,
@@ -381,15 +381,16 @@ class FuzzyExtractorFaceRecognition:
             salt: bytes = None,
             log=False) -> tuple[bytes, bytes] | bytes:
 
-        vectors = self._preprocess_images(images, log=log)
-        vectors = self.reject_face_vector_outliers(vectors)
-        primary = self.hash_primary(vectors, log=log)
         is_none = check_symbols is None
+        vectors = self._preprocess_images(images, log=log)
+        if is_none:
+            vectors = self.reject_face_vector_outliers(vectors)
+        primary = self.hash_primary(vectors, log=log)
         if is_none:
             check_symbols = self.get_check_symbols(primary, log=log)
         key = self.hash_secondary(primary, check_symbols, salt=salt, log=log)
         if is_none:
             print("Generated successfully")
-            return check_symbols, key
+            return key, check_symbols
         print("Private key recovered successfully")
         return key

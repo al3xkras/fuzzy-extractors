@@ -291,8 +291,8 @@ class TestFuzzyExtractorFaceRecognition(TestCase):
             c.cache_object(face_vectors2, cache_names[2])
 
         if face_vectors3 is None:
-            face_vectors3 = fun("test1_4", 30)
-            c.cache_object(face_vectors3, cache_names[2])
+            face_vectors3 = fun("test1_4_a", 30)
+            c.cache_object(face_vectors3, cache_names[3])
 
         h1 = fx.hash_primary(fx.reject_face_vector_outliers(face_vectors))
         check_symbols = fx.get_check_symbols(h1)
@@ -347,12 +347,16 @@ class TestFuzzyExtractorFaceRecognition(TestCase):
         check_symbols2 = fx.get_check_symbols(h2)
 
         print()
-        print(h1.hex())
-        print(h2.hex())
+        print("Hash for Elon:    ",h1.hex())
+        print("Hash for NileRed: ",h2.hex())
         print()
-        print(check_symbols1)
+        print(check_symbols1.hex())
         print()
-        print(check_symbols2)
+        print(check_symbols2.hex())
+
+        print()
+        print(len(h1.hex()),len(h2.hex()))
+        print(len(check_symbols1.hex()),len(check_symbols2.hex()))
 
         h11=b""
         h12=b""
@@ -370,10 +374,3 @@ class TestFuzzyExtractorFaceRecognition(TestCase):
         print("hash2:",h12.hex())
         self.assertEqual(h11,b'')
         self.assertEqual(h12,b'')
-
-    def test_hash_primary_probability_of_mistake(self):
-
-        init_parameters = {}  # default parameters
-
-    def test_generate_private_key(self):
-        pass
