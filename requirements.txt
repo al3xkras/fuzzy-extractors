@@ -4,3 +4,4 @@ face_recognition
 Pillow~=9.4.0
 #apt-get update && apt-get install ffmpeg libsm6 libxext6  -y
 reedsolo
+typer
