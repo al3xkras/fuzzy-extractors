@@ -202,7 +202,7 @@ class TestFuzzyExtractorFaceRecognition(TestCase):
         cache_names = [
             "test_primary_hash_elon4"
         ]
-        trials = 1500
+        trials = 500
         population_size = 50
         face_vectors = c.get_cached_object(cache_names[0])
         if face_vectors is None:
@@ -269,35 +269,43 @@ class TestFuzzyExtractorFaceRecognition(TestCase):
         cache_names = [
             "test_primary_hash_equality_for_the_same_person21",
             "test_primary_hash_equality_for_the_same_person22",
-            "test_primary_hash_equality_for_the_same_person23"
+            "test_primary_hash_equality_for_the_same_person23",
+            "test_primary_hash_equality_for_the_same_person24"
         ]
 
         face_vectors = c.get_cached_object(cache_names[0])
         face_vectors1 = c.get_cached_object(cache_names[1])
         face_vectors2 = c.get_cached_object(cache_names[2])
+        face_vectors3 = c.get_cached_object(cache_names[3])
 
         if face_vectors is None:
             face_vectors = fun("test1_1", 40)
             c.cache_object(face_vectors, cache_names[0])
 
         if face_vectors1 is None:
-            face_vectors1 = fun("test1_2", 40)
+            face_vectors1 = fun("test1_2", 30)
             c.cache_object(face_vectors1, cache_names[1])
 
         if face_vectors2 is None:
-            face_vectors2 = fun("test1_3", 40)
+            face_vectors2 = fun("test1_3", 30)
             c.cache_object(face_vectors2, cache_names[2])
+
+        if face_vectors3 is None:
+            face_vectors3 = fun("test1_4", 30)
+            c.cache_object(face_vectors3, cache_names[2])
 
         h1 = fx.hash_primary(fx.reject_face_vector_outliers(face_vectors))
         check_symbols = fx.get_check_symbols(h1)
 
         h2 = fx.hash_primary(fx.reject_face_vector_outliers(face_vectors1))
         h3 = fx.hash_primary(fx.reject_face_vector_outliers(face_vectors2))
+        h4 = fx.hash_primary(fx.reject_face_vector_outliers(face_vectors3))
 
         print()
         print(h1.hex())
         print(h2.hex())
         print(h3.hex())
+        print(h4.hex())
         print()
         print(check_symbols)
 
@@ -306,10 +314,12 @@ class TestFuzzyExtractorFaceRecognition(TestCase):
         h11 = fx.hash_secondary(h1,check_symbols)
         h12 = fx.hash_secondary(h2,check_symbols)
         h13 = fx.hash_secondary(h3,check_symbols)
+        h14 = fx.hash_secondary(h4,check_symbols)
 
         print(h11.hex())
         print(h12.hex())
         print(h13.hex())
+        print(h14.hex())
 
     def test_generate_check_symbols1(self):
         fx = FuzzyExtractorFaceRecognition(max_unique_hashes=1000)

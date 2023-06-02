@@ -8,8 +8,11 @@ import cv2
 import hashlib
 from itertools import combinations
 from reedsolo import RSCodec
+from logger import Logger
 
 Video = cv2.VideoCapture
+
+print = lambda *o: Logger.info(" ".join(map(str, o))) if len(o) > 0 else Logger.info("\n")
 
 
 class FrameIterator:
@@ -83,9 +86,9 @@ class FuzzyExtractorFaceRecognition:
                  d=0.055,
                  max_unique_hashes=-1,
                  p_a_min=0.6,
-                 check_symbols_count=32,
+                 check_symbols_count=64,
                  n_tests=250,
-                 sample_size=0.7,
+                 sample_size=0.8,
                  min_images=5,
                  alpha=0.5,
                  ):
@@ -114,7 +117,7 @@ class FuzzyExtractorFaceRecognition:
         self.check_symbols_count = check_symbols_count
         self.rsc = RSCodec(nsym=self.check_symbols_count)
 
-    def _preprocess_images(self, images: np.ndarray[np.ndarray | Image]) -> np.ndarray[np.ndarray]:
+    def _preprocess_images(self, images: np.ndarray[np.ndarray | Image], log=False) -> np.ndarray[np.ndarray]:
         """
         1. convert images to numpy (mode: RGB)
         2. locate faces; remove images that do not contain any face
@@ -122,18 +125,28 @@ class FuzzyExtractorFaceRecognition:
         4. crop image to a face rectangle
         5. return processed list of faces
         """
+        if log:
+            print("Preprocessing %d images" % len(images))
+
         if len(images) == 0:
             return images
 
+        if log:
+            print("Extracting face encodings...")
         g = lambda x: fr.face_encodings(x)[0]
+        j = 0
 
         def f(item):
+            nonlocal j
             if isinstance(item, Image):
                 item = FaceVectorExtractor.img_to_arr(item)
             try:
                 FaceVectorExtractor.get_face_bounding_box(item)
                 item = g(item)
+                j += 1
+                print("Processed %d out of %d" % (j, len(images)))
             except ValueError | IndexError:
+                print("Interrupting preprocessing stage")
                 return None
             return item
 
@@ -142,7 +155,7 @@ class FuzzyExtractorFaceRecognition:
         return np.array(lst)
 
     @staticmethod
-    def _get_outliers(data, std_max=0.5):
+    def _get_outliers(data, std_max):
         """
         :param data: the input data (np.array or list) of tuples (items at index 0 are numeric)
         :param std_max: the maximum variance to determine outliers: values
@@ -156,7 +169,8 @@ class FuzzyExtractorFaceRecognition:
         rejected = [data[i] for i in range(len(data)) if filter_[i]]
         return rejected
 
-    def reject_face_vector_outliers(self, face_vectors: np.ndarray[np.ndarray]) -> np.ndarray[np.ndarray]:
+    def reject_face_vector_outliers(self, face_vectors: np.ndarray[np.ndarray],
+                                    log=False) -> np.ndarray[np.ndarray]:
         """
         Reject 'outlier' images (such images, that have a comparably high standard deviation, and can not be used for the
         generation of private key).
@@ -169,6 +183,10 @@ class FuzzyExtractorFaceRecognition:
             (unable to build the private key for the given set of images)
         5. Otherwise, return the list of vectors, that does not contain outliers.
         """
+
+        if log:
+            print("Analyzing face vector outliers (sample size: %d)" % len(face_vectors))
+
         sample = []
 
         def mean_diff(v1: np.ndarray, v2: np.ndarray) -> float:
@@ -181,15 +199,17 @@ class FuzzyExtractorFaceRecognition:
             sample.append([f_, i, j])
 
         vec_sample = {}
-        for _, i, j in self._get_outliers(sample):
+        for _, i, j in self._get_outliers(sample,self.std_max):
             vec_sample[i] = vec_sample.get(i, 0) + 1
             vec_sample[j] = vec_sample.get(j, 0) + 1
 
-        vec_sample = self._get_outliers([(vec_sample[x], x) for x in vec_sample])
+        vec_sample = self._get_outliers([(vec_sample[x], x) for x in vec_sample],self.std_max)
         vec_sample = set([x[1] for x in vec_sample])
 
-        # print(len(sample_))
-        return np.array([x for i, x in enumerate(face_vectors) if i not in vec_sample])
+        out = np.array([x for i, x in enumerate(face_vectors) if i not in vec_sample])
+        if log:
+            print("Length after rejecting outliers: %d" % len(out))
+        return out
 
     def _image_stats(self, face_vectors: np.ndarray[np.ndarray]) -> tuple[np.ndarray, np.ndarray]:
         """
@@ -234,7 +254,7 @@ class FuzzyExtractorFaceRecognition:
             todo (1)(this probability is measured in the test cases, contained in this application)
         """
         if len(face_vectors) < self.min_images:
-            raise ValueError("insufficient number of images")
+            raise ValueError("insufficient number of images: %d"%len(face_vectors))
         img_mean, img_std = self._image_stats(face_vectors)
         stat = sum(x > self.std_max for x in img_std)
         if stat > self.alpha * len(img_std):
@@ -272,7 +292,7 @@ class FuzzyExtractorFaceRecognition:
             bytes_dict[b] /= len(bytez)
         return -sum(x * math.log2(x) for x in bytes_dict.values())
 
-    def hash_primary(self, face_vectors: np.ndarray[np.ndarray]) -> bytes:
+    def hash_primary(self, face_vectors: np.ndarray[np.ndarray], log=False) -> bytes:
         """
         Probability-based error correction paired with the _hash_primary method:
             This method is implemented in order to avoid possible errors, when face vectors are located close to a
@@ -288,6 +308,8 @@ class FuzzyExtractorFaceRecognition:
         5. Otherwise, find a hash value with the highest entropy and return it.
             (if both values have equal entropy, return a value which has a higher probability of occurrence)
         """
+        if log:
+            print("Generating a primary hash...")
 
         def dict_t2(d: dict):
             out = [None, None]
@@ -326,11 +348,13 @@ class FuzzyExtractorFaceRecognition:
             return hashes[0]
         return hashes[random.randint(0, 1)]
 
-    def get_check_symbols(self, hash_primary: bytes) -> bytes:
+    def get_check_symbols(self, hash_primary: bytes, log=False) -> bytes:
+        if log:
+            print("Generating check symbols...")
         rsc = RSCodec(self.check_symbols_count)
         return rsc.encode(hash_primary)[len(hash_primary):]
 
-    def hash_secondary(self, hash_primary: bytes, check_symbols: bytes, salt=None) -> bytes:
+    def hash_secondary(self, hash_primary: bytes, check_symbols: bytes, salt=None, log=False) -> bytes:
         """
          Create a secondary hash value, based on the primary hash value: (possible algorithms: SHA256)
          - map similar within a confidence interval primary hash codes to equal secondary codes
@@ -340,14 +364,32 @@ class FuzzyExtractorFaceRecognition:
 
          This method uses built-in implementation of the SHA256 secure hash algorithm.
         """
+        if log:
+            print("Computing a secondary hash value")
         rsc = self.rsc
         sha256 = hashlib.sha256()
         hash_ = rsc.decode(hash_primary + check_symbols)[0]
         if salt is not None:
-            sha256.update(hash_ + salt)
+            hash_ = hash_ + salt
+        sha256.update(hash_)
         return sha256.digest()
 
-    def generate_private_key(self, images: np.ndarray[np.ndarray], check_symbols: bytes) -> bytes:
-        vectors = self._preprocess_images(images)
+    def recover_private_key(
+            self,
+            images: np.ndarray[np.ndarray],
+            check_symbols: bytes = None,
+            salt: bytes = None,
+            log=False) -> tuple[bytes, bytes] | bytes:
+
+        vectors = self._preprocess_images(images, log=log)
         vectors = self.reject_face_vector_outliers(vectors)
-        return self.hash_secondary(self.hash_primary(vectors), check_symbols)
+        primary = self.hash_primary(vectors, log=log)
+        is_none = check_symbols is None
+        if is_none:
+            check_symbols = self.get_check_symbols(primary, log=log)
+        key = self.hash_secondary(primary, check_symbols, salt=salt, log=log)
+        if is_none:
+            print("Generated successfully")
+            return check_symbols, key
+        print("Private key recovered successfully")
+        return key
