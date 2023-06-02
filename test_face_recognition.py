@@ -171,7 +171,7 @@ class TestFuzzyExtractorFaceRecognition(TestCase):
         print(h3.hex())
 
     def test_primary_hash_inequality_for_different_people(self):
-        fx = FuzzyExtractorFaceRecognition(max_unique_hashes=1000)
+        fx = FuzzyExtractorFaceRecognition()
         c = Cache
         cache_names = [
             "test_primary_hash_elon3",
@@ -316,8 +316,9 @@ class TestFuzzyExtractorFaceRecognition(TestCase):
 
         c = Cache
         cache_names = [
-            "test_primary_hash_elon3",
-            "test_primary_hash_nile1"
+            "test_primary_hash_elon4",
+            "test_primary_hash_nile1",
+            "test_primary_hash_elon3"
         ]
 
         face_vectors_elon = c.get_cached_object(cache_names[0])
@@ -343,7 +344,7 @@ class TestFuzzyExtractorFaceRecognition(TestCase):
         print()
         print(check_symbols2)
 
-        h11 = b""
+        h11=b""
         h12=b""
         try:
             h11 = fx.hash_secondary(h1, check_symbols2)
@@ -357,6 +358,8 @@ class TestFuzzyExtractorFaceRecognition(TestCase):
             pass
         print("hash1:",h11.hex())
         print("hash2:",h12.hex())
+        self.assertEqual(h11,b'')
+        self.assertEqual(h12,b'')
 
     def test_hash_primary_probability_of_mistake(self):
 

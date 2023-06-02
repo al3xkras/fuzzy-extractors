@@ -79,14 +79,16 @@ class FaceVectorExtractor:
 class FuzzyExtractorFaceRecognition:
 
     def __init__(self,
-                 min_images=5,
+                 std_max=0.7,
                  d=0.055,
-                 std_max=0.03,
-                 alpha=0.5,
+                 max_unique_hashes=-1,
+                 p_a_min=0.6,
+                 check_symbols_count=32,
                  n_tests=250,
                  sample_size=0.7,
-                 p_a_min=0.6,
-                 max_unique_hashes=3):
+                 min_images=5,
+                 alpha=0.5,
+                 ):
         """
         :param min_images: min images to generate the hash (after preprocessing and rejecting outliers)
         :param d: the accuracy parameter (a positive float value, should be in range: (0,0.25])
@@ -109,7 +111,7 @@ class FuzzyExtractorFaceRecognition:
         self.p_a_min = p_a_min
         self.max_unique_hashes = max_unique_hashes
         self.key_size_bytes = 32
-        self.check_symbols_count = 64
+        self.check_symbols_count = check_symbols_count
         self.rsc = RSCodec(nsym=self.check_symbols_count)
 
     def _preprocess_images(self, images: np.ndarray[np.ndarray | Image]) -> np.ndarray[np.ndarray]:
@@ -231,6 +233,8 @@ class FuzzyExtractorFaceRecognition:
             execution time, however it may output incorrect answers with a certain probability
             todo (1)(this probability is measured in the test cases, contained in this application)
         """
+        if len(face_vectors) < self.min_images:
+            raise ValueError("insufficient number of images")
         img_mean, img_std = self._image_stats(face_vectors)
         stat = sum(x > self.std_max for x in img_std)
         if stat > self.alpha * len(img_std):
@@ -249,7 +253,7 @@ class FuzzyExtractorFaceRecognition:
             return int(val + 128).to_bytes(1, "little")
 
         f = np.vectorize(f)
-        #actual_landmarks = f(img_mean).tobytes('C')
+        # actual_landmarks = f(img_mean).tobytes('C')
         actual_landmarks = b"".join([to_byte(x) for x in f(img_mean)])
         return self.hash_format(actual_landmarks)
 
@@ -305,7 +309,7 @@ class FuzzyExtractorFaceRecognition:
             hash_val = self._hash_primary(sample)
             hashes_un[hash_val] = hashes_un.get(hash_val, 0) + 1
 
-        if len(hashes_un) > self.max_unique_hashes:
+        if 0 < self.max_unique_hashes < len(hashes_un):
             raise ValueError("input data rejected")
 
         hashes, vals = dict_t2(hashes_un)
@@ -326,7 +330,7 @@ class FuzzyExtractorFaceRecognition:
         rsc = RSCodec(self.check_symbols_count)
         return rsc.encode(hash_primary)[len(hash_primary):]
 
-    def hash_secondary(self, hash_primary: bytes, check_symbols: bytes) -> bytes:
+    def hash_secondary(self, hash_primary: bytes, check_symbols: bytes, salt=None) -> bytes:
         """
          Create a secondary hash value, based on the primary hash value: (possible algorithms: SHA256)
          - map similar within a confidence interval primary hash codes to equal secondary codes
@@ -339,8 +343,8 @@ class FuzzyExtractorFaceRecognition:
         rsc = self.rsc
         sha256 = hashlib.sha256()
         hash_ = rsc.decode(hash_primary + check_symbols)[0]
-
-        sha256.update(hash_)
+        if salt is not None:
+            sha256.update(hash_ + salt)
         return sha256.digest()
 
     def generate_private_key(self, images: np.ndarray[np.ndarray], check_symbols: bytes) -> bytes:
