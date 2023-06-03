@@ -1,0 +1,1735 @@
+\documentclass[11pt]{article}
+
+    \usepackage[breakable]{tcolorbox}
+    \usepackage{parskip} % Stop auto-indenting (to mimic markdown behaviour)
+    
+
+    % Basic figure setup, for now with no caption control since it's done
+    % automatically by Pandoc (which extracts ![](path) syntax from Markdown).
+    \usepackage{graphicx}
+    % Maintain compatibility with old templates. Remove in nbconvert 6.0
+    \let\Oldincludegraphics\includegraphics
+    % Ensure that by default, figures have no caption (until we provide a
+    % proper Figure object with a Caption API and a way to capture that
+    % in the conversion process - todo).
+    \usepackage{caption}
+    \DeclareCaptionFormat{nocaption}{}
+    \captionsetup{format=nocaption,aboveskip=0pt,belowskip=0pt}
+
+    \usepackage{float}
+    \floatplacement{figure}{H} % forces figures to be placed at the correct location
+    \usepackage{xcolor} % Allow colors to be defined
+    \usepackage{enumerate} % Needed for markdown enumerations to work
+    \usepackage{geometry} % Used to adjust the document margins
+    \usepackage{amsmath} % Equations
+    \usepackage{amssymb} % Equations
+    \usepackage{textcomp} % defines textquotesingle
+    % Hack from http://tex.stackexchange.com/a/47451/13684:
+    \AtBeginDocument{%
+        \def\PYZsq{\textquotesingle}% Upright quotes in Pygmentized code
+    }
+    \usepackage{upquote} % Upright quotes for verbatim code
+    \usepackage{eurosym} % defines \euro
+
+    \usepackage{iftex}
+    \ifPDFTeX
+        \usepackage[T1]{fontenc}
+        \IfFileExists{alphabeta.sty}{
+              \usepackage{alphabeta}
+          }{
+              \usepackage[mathletters]{ucs}
+              \usepackage[utf8x]{inputenc}
+          }
+    \else
+        \usepackage{fontspec}
+        \usepackage{unicode-math}
+    \fi
+
+    \usepackage{fancyvrb} % verbatim replacement that allows latex
+    \usepackage{grffile} % extends the file name processing of package graphics
+                         % to support a larger range
+    \makeatletter % fix for old versions of grffile with XeLaTeX
+    \@ifpackagelater{grffile}{2019/11/01}
+    {
+      % Do nothing on new versions
+    }
+    {
+      \def\Gread@@xetex#1{%
+        \IfFileExists{"\Gin@base".bb}%
+        {\Gread@eps{\Gin@base.bb}}%
+        {\Gread@@xetex@aux#1}%
+      }
+    }
+    \makeatother
+    \usepackage[Export]{adjustbox} % Used to constrain images to a maximum size
+    \adjustboxset{max size={0.9\linewidth}{0.9\paperheight}}
+
+    % The hyperref package gives us a pdf with properly built
+    % internal navigation ('pdf bookmarks' for the table of contents,
+    % internal cross-reference links, web links for URLs, etc.)
+    \usepackage{hyperref}
+    % The default LaTeX title has an obnoxious amount of whitespace. By default,
+    % titling removes some of it. It also provides customization options.
+    \usepackage{titling}
+    \usepackage{longtable} % longtable support required by pandoc >1.10
+    \usepackage{booktabs}  % table support for pandoc > 1.12.2
+    \usepackage{array}     % table support for pandoc >= 2.11.3
+    \usepackage{calc}      % table minipage width calculation for pandoc >= 2.11.1
+    \usepackage[inline]{enumitem} % IRkernel/repr support (it uses the enumerate* environment)
+    \usepackage[normalem]{ulem} % ulem is needed to support strikethroughs (\sout)
+                                % normalem makes italics be italics, not underlines
+    \usepackage{mathrsfs}
+    
+
+    
+    % Colors for the hyperref package
+    \definecolor{urlcolor}{rgb}{0,.145,.698}
+    \definecolor{linkcolor}{rgb}{.71,0.21,0.01}
+    \definecolor{citecolor}{rgb}{.12,.54,.11}
+
+    % ANSI colors
+    \definecolor{ansi-black}{HTML}{3E424D}
+    \definecolor{ansi-black-intense}{HTML}{282C36}
+    \definecolor{ansi-red}{HTML}{E75C58}
+    \definecolor{ansi-red-intense}{HTML}{B22B31}
+    \definecolor{ansi-green}{HTML}{00A250}
+    \definecolor{ansi-green-intense}{HTML}{007427}
+    \definecolor{ansi-yellow}{HTML}{DDB62B}
+    \definecolor{ansi-yellow-intense}{HTML}{B27D12}
+    \definecolor{ansi-blue}{HTML}{208FFB}
+    \definecolor{ansi-blue-intense}{HTML}{0065CA}
+    \definecolor{ansi-magenta}{HTML}{D160C4}
+    \definecolor{ansi-magenta-intense}{HTML}{A03196}
+    \definecolor{ansi-cyan}{HTML}{60C6C8}
+    \definecolor{ansi-cyan-intense}{HTML}{258F8F}
+    \definecolor{ansi-white}{HTML}{C5C1B4}
+    \definecolor{ansi-white-intense}{HTML}{A1A6B2}
+    \definecolor{ansi-default-inverse-fg}{HTML}{FFFFFF}
+    \definecolor{ansi-default-inverse-bg}{HTML}{000000}
+
+    % common color for the border for error outputs.
+    \definecolor{outerrorbackground}{HTML}{FFDFDF}
+
+    % commands and environments needed by pandoc snippets
+    % extracted from the output of `pandoc -s`
+    \providecommand{\tightlist}{%
+      \setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}}
+    \DefineVerbatimEnvironment{Highlighting}{Verbatim}{commandchars=\\\{\}}
+    % Add ',fontsize=\small' for more characters per line
+    \newenvironment{Shaded}{}{}
+    \newcommand{\KeywordTok}[1]{\textcolor[rgb]{0.00,0.44,0.13}{\textbf{{#1}}}}
+    \newcommand{\DataTypeTok}[1]{\textcolor[rgb]{0.56,0.13,0.00}{{#1}}}
+    \newcommand{\DecValTok}[1]{\textcolor[rgb]{0.25,0.63,0.44}{{#1}}}
+    \newcommand{\BaseNTok}[1]{\textcolor[rgb]{0.25,0.63,0.44}{{#1}}}
+    \newcommand{\FloatTok}[1]{\textcolor[rgb]{0.25,0.63,0.44}{{#1}}}
+    \newcommand{\CharTok}[1]{\textcolor[rgb]{0.25,0.44,0.63}{{#1}}}
+    \newcommand{\StringTok}[1]{\textcolor[rgb]{0.25,0.44,0.63}{{#1}}}
+    \newcommand{\CommentTok}[1]{\textcolor[rgb]{0.38,0.63,0.69}{\textit{{#1}}}}
+    \newcommand{\OtherTok}[1]{\textcolor[rgb]{0.00,0.44,0.13}{{#1}}}
+    \newcommand{\AlertTok}[1]{\textcolor[rgb]{1.00,0.00,0.00}{\textbf{{#1}}}}
+    \newcommand{\FunctionTok}[1]{\textcolor[rgb]{0.02,0.16,0.49}{{#1}}}
+    \newcommand{\RegionMarkerTok}[1]{{#1}}
+    \newcommand{\ErrorTok}[1]{\textcolor[rgb]{1.00,0.00,0.00}{\textbf{{#1}}}}
+    \newcommand{\NormalTok}[1]{{#1}}
+
+    % Additional commands for more recent versions of Pandoc
+    \newcommand{\ConstantTok}[1]{\textcolor[rgb]{0.53,0.00,0.00}{{#1}}}
+    \newcommand{\SpecialCharTok}[1]{\textcolor[rgb]{0.25,0.44,0.63}{{#1}}}
+    \newcommand{\VerbatimStringTok}[1]{\textcolor[rgb]{0.25,0.44,0.63}{{#1}}}
+    \newcommand{\SpecialStringTok}[1]{\textcolor[rgb]{0.73,0.40,0.53}{{#1}}}
+    \newcommand{\ImportTok}[1]{{#1}}
+    \newcommand{\DocumentationTok}[1]{\textcolor[rgb]{0.73,0.13,0.13}{\textit{{#1}}}}
+    \newcommand{\AnnotationTok}[1]{\textcolor[rgb]{0.38,0.63,0.69}{\textbf{\textit{{#1}}}}}
+    \newcommand{\CommentVarTok}[1]{\textcolor[rgb]{0.38,0.63,0.69}{\textbf{\textit{{#1}}}}}
+    \newcommand{\VariableTok}[1]{\textcolor[rgb]{0.10,0.09,0.49}{{#1}}}
+    \newcommand{\ControlFlowTok}[1]{\textcolor[rgb]{0.00,0.44,0.13}{\textbf{{#1}}}}
+    \newcommand{\OperatorTok}[1]{\textcolor[rgb]{0.40,0.40,0.40}{{#1}}}
+    \newcommand{\BuiltInTok}[1]{{#1}}
+    \newcommand{\ExtensionTok}[1]{{#1}}
+    \newcommand{\PreprocessorTok}[1]{\textcolor[rgb]{0.74,0.48,0.00}{{#1}}}
+    \newcommand{\AttributeTok}[1]{\textcolor[rgb]{0.49,0.56,0.16}{{#1}}}
+    \newcommand{\InformationTok}[1]{\textcolor[rgb]{0.38,0.63,0.69}{\textbf{\textit{{#1}}}}}
+    \newcommand{\WarningTok}[1]{\textcolor[rgb]{0.38,0.63,0.69}{\textbf{\textit{{#1}}}}}
+
+
+    % Define a nice break command that doesn't care if a line doesn't already
+    % exist.
+    \def\br{\hspace*{\fill} \\* }
+    % Math Jax compatibility definitions
+    \def\gt{>}
+    \def\lt{<}
+    \let\Oldtex\TeX
+    \let\Oldlatex\LaTeX
+    \renewcommand{\TeX}{\textrm{\Oldtex}}
+    \renewcommand{\LaTeX}{\textrm{\Oldlatex}}
+    % Document parameters
+    % Document title
+    \title{FuzzyExtractors}
+    
+    
+    
+    
+    
+% Pygments definitions
+\makeatletter
+\def\PY@reset{\let\PY@it=\relax \let\PY@bf=\relax%
+    \let\PY@ul=\relax \let\PY@tc=\relax%
+    \let\PY@bc=\relax \let\PY@ff=\relax}
+\def\PY@tok#1{\csname PY@tok@#1\endcsname}
+\def\PY@toks#1+{\ifx\relax#1\empty\else%
+    \PY@tok{#1}\expandafter\PY@toks\fi}
+\def\PY@do#1{\PY@bc{\PY@tc{\PY@ul{%
+    \PY@it{\PY@bf{\PY@ff{#1}}}}}}}
+\def\PY#1#2{\PY@reset\PY@toks#1+\relax+\PY@do{#2}}
+
+\@namedef{PY@tok@w}{\def\PY@tc##1{\textcolor[rgb]{0.73,0.73,0.73}{##1}}}
+\@namedef{PY@tok@c}{\let\PY@it=\textit\def\PY@tc##1{\textcolor[rgb]{0.24,0.48,0.48}{##1}}}
+\@namedef{PY@tok@cp}{\def\PY@tc##1{\textcolor[rgb]{0.61,0.40,0.00}{##1}}}
+\@namedef{PY@tok@k}{\let\PY@bf=\textbf\def\PY@tc##1{\textcolor[rgb]{0.00,0.50,0.00}{##1}}}
+\@namedef{PY@tok@kp}{\def\PY@tc##1{\textcolor[rgb]{0.00,0.50,0.00}{##1}}}
+\@namedef{PY@tok@kt}{\def\PY@tc##1{\textcolor[rgb]{0.69,0.00,0.25}{##1}}}
+\@namedef{PY@tok@o}{\def\PY@tc##1{\textcolor[rgb]{0.40,0.40,0.40}{##1}}}
+\@namedef{PY@tok@ow}{\let\PY@bf=\textbf\def\PY@tc##1{\textcolor[rgb]{0.67,0.13,1.00}{##1}}}
+\@namedef{PY@tok@nb}{\def\PY@tc##1{\textcolor[rgb]{0.00,0.50,0.00}{##1}}}
+\@namedef{PY@tok@nf}{\def\PY@tc##1{\textcolor[rgb]{0.00,0.00,1.00}{##1}}}
+\@namedef{PY@tok@nc}{\let\PY@bf=\textbf\def\PY@tc##1{\textcolor[rgb]{0.00,0.00,1.00}{##1}}}
+\@namedef{PY@tok@nn}{\let\PY@bf=\textbf\def\PY@tc##1{\textcolor[rgb]{0.00,0.00,1.00}{##1}}}
+\@namedef{PY@tok@ne}{\let\PY@bf=\textbf\def\PY@tc##1{\textcolor[rgb]{0.80,0.25,0.22}{##1}}}
+\@namedef{PY@tok@nv}{\def\PY@tc##1{\textcolor[rgb]{0.10,0.09,0.49}{##1}}}
+\@namedef{PY@tok@no}{\def\PY@tc##1{\textcolor[rgb]{0.53,0.00,0.00}{##1}}}
+\@namedef{PY@tok@nl}{\def\PY@tc##1{\textcolor[rgb]{0.46,0.46,0.00}{##1}}}
+\@namedef{PY@tok@ni}{\let\PY@bf=\textbf\def\PY@tc##1{\textcolor[rgb]{0.44,0.44,0.44}{##1}}}
+\@namedef{PY@tok@na}{\def\PY@tc##1{\textcolor[rgb]{0.41,0.47,0.13}{##1}}}
+\@namedef{PY@tok@nt}{\let\PY@bf=\textbf\def\PY@tc##1{\textcolor[rgb]{0.00,0.50,0.00}{##1}}}
+\@namedef{PY@tok@nd}{\def\PY@tc##1{\textcolor[rgb]{0.67,0.13,1.00}{##1}}}
+\@namedef{PY@tok@s}{\def\PY@tc##1{\textcolor[rgb]{0.73,0.13,0.13}{##1}}}
+\@namedef{PY@tok@sd}{\let\PY@it=\textit\def\PY@tc##1{\textcolor[rgb]{0.73,0.13,0.13}{##1}}}
+\@namedef{PY@tok@si}{\let\PY@bf=\textbf\def\PY@tc##1{\textcolor[rgb]{0.64,0.35,0.47}{##1}}}
+\@namedef{PY@tok@se}{\let\PY@bf=\textbf\def\PY@tc##1{\textcolor[rgb]{0.67,0.36,0.12}{##1}}}
+\@namedef{PY@tok@sr}{\def\PY@tc##1{\textcolor[rgb]{0.64,0.35,0.47}{##1}}}
+\@namedef{PY@tok@ss}{\def\PY@tc##1{\textcolor[rgb]{0.10,0.09,0.49}{##1}}}
+\@namedef{PY@tok@sx}{\def\PY@tc##1{\textcolor[rgb]{0.00,0.50,0.00}{##1}}}
+\@namedef{PY@tok@m}{\def\PY@tc##1{\textcolor[rgb]{0.40,0.40,0.40}{##1}}}
+\@namedef{PY@tok@gh}{\let\PY@bf=\textbf\def\PY@tc##1{\textcolor[rgb]{0.00,0.00,0.50}{##1}}}
+\@namedef{PY@tok@gu}{\let\PY@bf=\textbf\def\PY@tc##1{\textcolor[rgb]{0.50,0.00,0.50}{##1}}}
+\@namedef{PY@tok@gd}{\def\PY@tc##1{\textcolor[rgb]{0.63,0.00,0.00}{##1}}}
+\@namedef{PY@tok@gi}{\def\PY@tc##1{\textcolor[rgb]{0.00,0.52,0.00}{##1}}}
+\@namedef{PY@tok@gr}{\def\PY@tc##1{\textcolor[rgb]{0.89,0.00,0.00}{##1}}}
+\@namedef{PY@tok@ge}{\let\PY@it=\textit}
+\@namedef{PY@tok@gs}{\let\PY@bf=\textbf}
+\@namedef{PY@tok@gp}{\let\PY@bf=\textbf\def\PY@tc##1{\textcolor[rgb]{0.00,0.00,0.50}{##1}}}
+\@namedef{PY@tok@go}{\def\PY@tc##1{\textcolor[rgb]{0.44,0.44,0.44}{##1}}}
+\@namedef{PY@tok@gt}{\def\PY@tc##1{\textcolor[rgb]{0.00,0.27,0.87}{##1}}}
+\@namedef{PY@tok@err}{\def\PY@bc##1{{\setlength{\fboxsep}{\string -\fboxrule}\fcolorbox[rgb]{1.00,0.00,0.00}{1,1,1}{\strut ##1}}}}
+\@namedef{PY@tok@kc}{\let\PY@bf=\textbf\def\PY@tc##1{\textcolor[rgb]{0.00,0.50,0.00}{##1}}}
+\@namedef{PY@tok@kd}{\let\PY@bf=\textbf\def\PY@tc##1{\textcolor[rgb]{0.00,0.50,0.00}{##1}}}
+\@namedef{PY@tok@kn}{\let\PY@bf=\textbf\def\PY@tc##1{\textcolor[rgb]{0.00,0.50,0.00}{##1}}}
+\@namedef{PY@tok@kr}{\let\PY@bf=\textbf\def\PY@tc##1{\textcolor[rgb]{0.00,0.50,0.00}{##1}}}
+\@namedef{PY@tok@bp}{\def\PY@tc##1{\textcolor[rgb]{0.00,0.50,0.00}{##1}}}
+\@namedef{PY@tok@fm}{\def\PY@tc##1{\textcolor[rgb]{0.00,0.00,1.00}{##1}}}
+\@namedef{PY@tok@vc}{\def\PY@tc##1{\textcolor[rgb]{0.10,0.09,0.49}{##1}}}
+\@namedef{PY@tok@vg}{\def\PY@tc##1{\textcolor[rgb]{0.10,0.09,0.49}{##1}}}
+\@namedef{PY@tok@vi}{\def\PY@tc##1{\textcolor[rgb]{0.10,0.09,0.49}{##1}}}
+\@namedef{PY@tok@vm}{\def\PY@tc##1{\textcolor[rgb]{0.10,0.09,0.49}{##1}}}
+\@namedef{PY@tok@sa}{\def\PY@tc##1{\textcolor[rgb]{0.73,0.13,0.13}{##1}}}
+\@namedef{PY@tok@sb}{\def\PY@tc##1{\textcolor[rgb]{0.73,0.13,0.13}{##1}}}
+\@namedef{PY@tok@sc}{\def\PY@tc##1{\textcolor[rgb]{0.73,0.13,0.13}{##1}}}
+\@namedef{PY@tok@dl}{\def\PY@tc##1{\textcolor[rgb]{0.73,0.13,0.13}{##1}}}
+\@namedef{PY@tok@s2}{\def\PY@tc##1{\textcolor[rgb]{0.73,0.13,0.13}{##1}}}
+\@namedef{PY@tok@sh}{\def\PY@tc##1{\textcolor[rgb]{0.73,0.13,0.13}{##1}}}
+\@namedef{PY@tok@s1}{\def\PY@tc##1{\textcolor[rgb]{0.73,0.13,0.13}{##1}}}
+\@namedef{PY@tok@mb}{\def\PY@tc##1{\textcolor[rgb]{0.40,0.40,0.40}{##1}}}
+\@namedef{PY@tok@mf}{\def\PY@tc##1{\textcolor[rgb]{0.40,0.40,0.40}{##1}}}
+\@namedef{PY@tok@mh}{\def\PY@tc##1{\textcolor[rgb]{0.40,0.40,0.40}{##1}}}
+\@namedef{PY@tok@mi}{\def\PY@tc##1{\textcolor[rgb]{0.40,0.40,0.40}{##1}}}
+\@namedef{PY@tok@il}{\def\PY@tc##1{\textcolor[rgb]{0.40,0.40,0.40}{##1}}}
+\@namedef{PY@tok@mo}{\def\PY@tc##1{\textcolor[rgb]{0.40,0.40,0.40}{##1}}}
+\@namedef{PY@tok@ch}{\let\PY@it=\textit\def\PY@tc##1{\textcolor[rgb]{0.24,0.48,0.48}{##1}}}
+\@namedef{PY@tok@cm}{\let\PY@it=\textit\def\PY@tc##1{\textcolor[rgb]{0.24,0.48,0.48}{##1}}}
+\@namedef{PY@tok@cpf}{\let\PY@it=\textit\def\PY@tc##1{\textcolor[rgb]{0.24,0.48,0.48}{##1}}}
+\@namedef{PY@tok@c1}{\let\PY@it=\textit\def\PY@tc##1{\textcolor[rgb]{0.24,0.48,0.48}{##1}}}
+\@namedef{PY@tok@cs}{\let\PY@it=\textit\def\PY@tc##1{\textcolor[rgb]{0.24,0.48,0.48}{##1}}}
+
+\def\PYZbs{\char`\\}
+\def\PYZus{\char`\_}
+\def\PYZob{\char`\{}
+\def\PYZcb{\char`\}}
+\def\PYZca{\char`\^}
+\def\PYZam{\char`\&}
+\def\PYZlt{\char`\<}
+\def\PYZgt{\char`\>}
+\def\PYZsh{\char`\#}
+\def\PYZpc{\char`\%}
+\def\PYZdl{\char`\$}
+\def\PYZhy{\char`\-}
+\def\PYZsq{\char`\'}
+\def\PYZdq{\char`\"}
+\def\PYZti{\char`\~}
+% for compatibility with earlier versions
+\def\PYZat{@}
+\def\PYZlb{[}
+\def\PYZrb{]}
+\makeatother
+
+
+    % For linebreaks inside Verbatim environment from package fancyvrb.
+    \makeatletter
+        \newbox\Wrappedcontinuationbox
+        \newbox\Wrappedvisiblespacebox
+        \newcommand*\Wrappedvisiblespace {\textcolor{red}{\textvisiblespace}}
+        \newcommand*\Wrappedcontinuationsymbol {\textcolor{red}{\llap{\tiny$\m@th\hookrightarrow$}}}
+        \newcommand*\Wrappedcontinuationindent {3ex }
+        \newcommand*\Wrappedafterbreak {\kern\Wrappedcontinuationindent\copy\Wrappedcontinuationbox}
+        % Take advantage of the already applied Pygments mark-up to insert
+        % potential linebreaks for TeX processing.
+        %        {, <, #, %, $, ' and ": go to next line.
+        %        _, }, ^, &, >, - and ~: stay at end of broken line.
+        % Use of \textquotesingle for straight quote.
+        \newcommand*\Wrappedbreaksatspecials {%
+            \def\PYGZus{\discretionary{\char`\_}{\Wrappedafterbreak}{\char`\_}}%
+            \def\PYGZob{\discretionary{}{\Wrappedafterbreak\char`\{}{\char`\{}}%
+            \def\PYGZcb{\discretionary{\char`\}}{\Wrappedafterbreak}{\char`\}}}%
+            \def\PYGZca{\discretionary{\char`\^}{\Wrappedafterbreak}{\char`\^}}%
+            \def\PYGZam{\discretionary{\char`\&}{\Wrappedafterbreak}{\char`\&}}%
+            \def\PYGZlt{\discretionary{}{\Wrappedafterbreak\char`\<}{\char`\<}}%
+            \def\PYGZgt{\discretionary{\char`\>}{\Wrappedafterbreak}{\char`\>}}%
+            \def\PYGZsh{\discretionary{}{\Wrappedafterbreak\char`\#}{\char`\#}}%
+            \def\PYGZpc{\discretionary{}{\Wrappedafterbreak\char`\%}{\char`\%}}%
+            \def\PYGZdl{\discretionary{}{\Wrappedafterbreak\char`\$}{\char`\$}}%
+            \def\PYGZhy{\discretionary{\char`\-}{\Wrappedafterbreak}{\char`\-}}%
+            \def\PYGZsq{\discretionary{}{\Wrappedafterbreak\textquotesingle}{\textquotesingle}}%
+            \def\PYGZdq{\discretionary{}{\Wrappedafterbreak\char`\"}{\char`\"}}%
+            \def\PYGZti{\discretionary{\char`\~}{\Wrappedafterbreak}{\char`\~}}%
+        }
+        % Some characters . , ; ? ! / are not pygmentized.
+        % This macro makes them "active" and they will insert potential linebreaks
+        \newcommand*\Wrappedbreaksatpunct {%
+            \lccode`\~`\.\lowercase{\def~}{\discretionary{\hbox{\char`\.}}{\Wrappedafterbreak}{\hbox{\char`\.}}}%
+            \lccode`\~`\,\lowercase{\def~}{\discretionary{\hbox{\char`\,}}{\Wrappedafterbreak}{\hbox{\char`\,}}}%
+            \lccode`\~`\;\lowercase{\def~}{\discretionary{\hbox{\char`\;}}{\Wrappedafterbreak}{\hbox{\char`\;}}}%
+            \lccode`\~`\:\lowercase{\def~}{\discretionary{\hbox{\char`\:}}{\Wrappedafterbreak}{\hbox{\char`\:}}}%
+            \lccode`\~`\?\lowercase{\def~}{\discretionary{\hbox{\char`\?}}{\Wrappedafterbreak}{\hbox{\char`\?}}}%
+            \lccode`\~`\!\lowercase{\def~}{\discretionary{\hbox{\char`\!}}{\Wrappedafterbreak}{\hbox{\char`\!}}}%
+            \lccode`\~`\/\lowercase{\def~}{\discretionary{\hbox{\char`\/}}{\Wrappedafterbreak}{\hbox{\char`\/}}}%
+            \catcode`\.\active
+            \catcode`\,\active
+            \catcode`\;\active
+            \catcode`\:\active
+            \catcode`\?\active
+            \catcode`\!\active
+            \catcode`\/\active
+            \lccode`\~`\~
+        }
+    \makeatother
+
+    \let\OriginalVerbatim=\Verbatim
+    \makeatletter
+    \renewcommand{\Verbatim}[1][1]{%
+        %\parskip\z@skip
+        \sbox\Wrappedcontinuationbox {\Wrappedcontinuationsymbol}%
+        \sbox\Wrappedvisiblespacebox {\FV@SetupFont\Wrappedvisiblespace}%
+        \def\FancyVerbFormatLine ##1{\hsize\linewidth
+            \vtop{\raggedright\hyphenpenalty\z@\exhyphenpenalty\z@
+                \doublehyphendemerits\z@\finalhyphendemerits\z@
+                \strut ##1\strut}%
+        }%
+        % If the linebreak is at a space, the latter will be displayed as visible
+        % space at end of first line, and a continuation symbol starts next line.
+        % Stretch/shrink are however usually zero for typewriter font.
+        \def\FV@Space {%
+            \nobreak\hskip\z@ plus\fontdimen3\font minus\fontdimen4\font
+            \discretionary{\copy\Wrappedvisiblespacebox}{\Wrappedafterbreak}
+            {\kern\fontdimen2\font}%
+        }%
+
+        % Allow breaks at special characters using \PYG... macros.
+        \Wrappedbreaksatspecials
+        % Breaks at punctuation characters . , ; ? ! and / need catcode=\active
+        \OriginalVerbatim[#1,codes*=\Wrappedbreaksatpunct]%
+    }
+    \makeatother
+
+    % Exact colors from NB
+    \definecolor{incolor}{HTML}{303F9F}
+    \definecolor{outcolor}{HTML}{D84315}
+    \definecolor{cellborder}{HTML}{CFCFCF}
+    \definecolor{cellbackground}{HTML}{F7F7F7}
+
+    % prompt
+    \makeatletter
+    \newcommand{\boxspacing}{\kern\kvtcb@left@rule\kern\kvtcb@boxsep}
+    \makeatother
+    \newcommand{\prompt}[4]{
+        {\ttfamily\llap{{\color{#2}[#3]:\hspace{3pt}#4}}\vspace{-\baselineskip}}
+    }
+    
+
+    
+    % Prevent overflowing lines due to hard-to-break entities
+    \sloppy
+    % Setup hyperref package
+    \hypersetup{
+      breaklinks=true,  % so long urls are correctly broken across lines
+      colorlinks=true,
+      urlcolor=urlcolor,
+      linkcolor=linkcolor,
+      citecolor=citecolor,
+      }
+    % Slightly bigger margins than the latex defaults
+    
+    \geometry{verbose,tmargin=1in,bmargin=1in,lmargin=1in,rmargin=1in}
+    
+    
+
+\begin{document}
+    
+    \maketitle
+    
+    
+
+    
+    \hypertarget{fuzzy-extractors}{%
+\section{Fuzzy Extractors}\label{fuzzy-extractors}}
+
+\hypertarget{course-project-by-alexander-krasovskiy}{%
+\subsubsection{\texorpdfstring{\emph{Course project by Alexander
+Krasovskiy}}{Course project by Alexander Krasovskiy}}\label{course-project-by-alexander-krasovskiy}}
+
+    \hypertarget{ux437ux43cux456ux441ux442}{%
+\subsection{Зміст}\label{ux437ux43cux456ux441ux442}}
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\tightlist
+\item
+  \hyperref[нечіткі-екстрактори]{Вступ}
+\item
+  \hyperref[постановка-задачі-та-огляд-літератури]{Постановка задачі та огляд літератури}
+\item
+  \hyperref[необхідні-допоміжні-відомості]{Необхідні допоміжні відомості}
+\item
+  \hyperref[опис-структури-нечіткого-екстрактора]{Опис структури нечіткого екстрактора}
+\item
+  \hyperref[аналіз-криптографічної-безпеки-побудованого-нечіткого-екстрактора]{Аналіз криптографічної безпеки побудованого нечіткого екстрактора}
+\item
+  \hyperref[аналіз-ефективності-побудованої-моделі]{Аналіз ефективності побудованої моделі}
+\item
+  \hyperref[приклади-використання]{Приклади використання та імітаційні експерименти}
+\item
+  \hyperref[висновки]{Висновки}
+\end{enumerate}
+
+    \hypertarget{ux43dux435ux447ux456ux442ux43aux456-ux435ux43aux441ux442ux440ux430ux43aux442ux43eux440ux438}{%
+\subsection{Нечіткі
+екстрактори}\label{ux43dux435ux447ux456ux442ux43aux456-ux435ux43aux441ux442ux440ux430ux43aux442ux43eux440ux438}}
+
+    Нечіткі екстрактори --- це метод, який дозволяє використовувати
+біометричні дані як вхідні дані для стандартних криптографічних методів
+для підвищення їх безпеки. «Нечіткість» у цьому контексті стосується
+того факту, що фіксовані значення, необхідні для криптографії, будуть
+отримані зі значень, близьких до вихідного ключа, але не ідентичних, без
+шкоди для необхідної безпеки.
+
+Нечіткі екстрактори --- це біометричний інструмент, який дозволяє
+автентифікувати користувача за допомогою біометричного шаблону,
+створеного з біометричних даних користувача як ключа, шляхом вилучення
+однорідного випадкового рядка \(R\) з вхідних даних \(w\), з допуском на
+шум. Якщо вхідні дані змінюється на \(w'\) але є близькими до \(w\)
+відповідно до умов алгоритму, рядок \(R\) буде реконструйовано як на
+\(w\), так і на даних \(w'\).
+
+Для досягнення даного результату, під час початкового обчислення \(R\)
+процес також повертає допоміжний рядок \(P\), який буде збережено для
+відновлення \(R\) і може бути оприлюднений без шкоди для безпеки \(R\).
+
+Безпека процесу також забезпечується, у випадку, коли зловмисник вносить
+зміни до значення \(P\).
+
+Після обчислення фіксованого рядка \(R\), Дані можуть бути використані,
+наприклад, для узгодження ключів між користувачем і сервером лише на
+основі біометричного введення.
+
+    Основні властивості нечітких екстракторів:
+
+\begin{itemize}
+\item
+  Нечіткий екстрактор є ймовірнісним Монте-Карло алгоритмом, для якого
+  виконються умови:
+
+  \begin{itemize}
+  \tightlist
+  \item
+    \(\forall\) неавторизованого користувача \(R^*\), з ймовірністю
+    \(1-\epsilon\) дані \(R^*\) відхиляються
+  \item
+    Для авторизованого користувача \(R\), алгоритм з ймовірністю
+    \(1-\epsilon\) (де \(\epsilon\) - ймовірність однобічної помилки
+    алгоритму), приймає дані \(R\) та авторизує користувача
+  \end{itemize}
+\item
+  Нечіткий екстрактор є параметричною моделлю. Для довільного нечіткого
+  екстрактора, існує набір параметрів \(\theta \in \Theta\), для якого
+  ймовірність однобічної помилки є як завгодно малою.
+\item
+  Нечіткі екстрактори використовуються у комбінації з кодами виправлення
+  помилок (англ. Error Correction codes, ECC). Властивості ECC надають
+  можливість створення публічного значення \(P\) (check symbols), яке
+  може бути оприлюднене без ризиків для безпеки користувача, і
+  використане для відновлення ключа за вихідними даними нечіткого
+  екстрактора.
+\end{itemize}
+
+    \hypertarget{ux43fux43eux441ux442ux430ux43dux43eux432ux43aux430-ux437ux430ux434ux430ux447ux456-ux442ux430-ux43eux433ux43bux44fux434-ux43bux456ux442ux435ux440ux430ux442ux443ux440ux438}{%
+\subsection{Постановка задачі та огляд
+літератури}\label{ux43fux43eux441ux442ux430ux43dux43eux432ux43aux430-ux437ux430ux434ux430ux447ux456-ux442ux430-ux43eux433ux43bux44fux434-ux43bux456ux442ux435ux440ux430ux442ux443ux440ux438}}
+
+Постановка задачі:
+
+Побудова параметричної моделі нечіткого екстрактору на основі однієї з
+моделей face-recognition з відкритим вихідним кодом. Вхідними даними
+нечіткого екстрактора є послідовність зображень, та набір параметрів з
+простору \(\Theta\). Алгоритм має два режими роботи: створення
+перевірочних символів, або ініціалізація алгоритму з існуючими
+перевірочними символами і побудова ключа. Результатом роботи алгоритму є
+криптографічний ключ, безпечий для використання у інших криптографічних
+алгоритмах. За випадково опублікованим ключем, не повино існувати
+можливостей отримання біометричних даних користувача.
+
+Огляд літератури:
+
+\begin{itemize}
+\tightlist
+\item
+  Доцільність використання кодів Ріда-Соломона у якості ECC
+
+  \begin{enumerate}
+  \def\labelenumi{\arabic{enumi}.}
+  \item
+    Відповідно до ресурсу:
+    https://www.cs.bu.edu/\textasciitilde reyzin/fuzzysurvey.html
+    ``Fuzzy Extractors∗ A Brief Survey of Results from 2004 to 2006''
+    \textgreater{} The tradeoff between the error tolerance and the
+    entropy loss depends on the choice of errorcorrecting code. For
+    large alphabets (\(\mathbb{F}\) is a field of size \(\geq n\)),
+    \textgreater{} one can use Reed-Solomon codes to get the optimal
+    entropy loss of \(2t\log{|\mathbb{F}|}\). \textgreater{} No secure
+    sketch construction can have better tradeoff between error tolerance
+    and entropy loss than \textgreater{} Construction 1, as searching
+    for better secure sketches for the Hamming distance is equivalent to
+    searching for \textgreater{} better error-correcting codes. Better
+    secure sketches, however, can be achieved if one is willing to
+    \textgreater{} slightly weaken the guarantee of correctness (Section
+    4).
+
+    (де \(\mathbb{F}\) - алфавіт ECC; t - вага Хемінга векторів, для
+    яких вимірюється значення \(\text{loss} = 2t\log{|\mathbb{F}|}\))
+
+    Відповідно до роботи ``Fuzzy Extractors∗ A Brief Survey of Results
+    from 2004 to 2006'', даний код конструює безпечну послідовність
+    перевірочних символіволів, за якою не існує оптимального алгоритму
+    отримання вхідних даних. Також, даний код має оптимальну втрату
+    ентропії після додавання перевірочних символів до послідовності:
+    \(2t\log{|\mathbb{F}|}\). Результат було враховано під час вибору
+    коду ECC та реалізації нечіткого екстрактора.
+  \end{enumerate}
+\end{itemize}
+
+    \hypertarget{ux43dux435ux43eux431ux445ux456ux434ux43dux456-ux434ux43eux43fux43eux43cux456ux436ux43dux456-ux432ux456ux434ux43eux43cux43eux441ux442ux456}{%
+\subsubsection{Необхідні допоміжні
+відомості}\label{ux43dux435ux43eux431ux445ux456ux434ux43dux456-ux434ux43eux43fux43eux43cux456ux436ux43dux456-ux432ux456ux434ux43eux43cux43eux441ux442ux456}}
+
+    \hypertarget{ux43cux435ux442ux440ux438ux447ux43dux438ux439-ux43fux440ux43eux441ux442ux456ux440}{%
+\subsubsection{Метричний
+простір}\label{ux43cux435ux442ux440ux438ux447ux43dux438ux439-ux43fux440ux43eux441ux442ux456ux440}}
+
+Означення \hyperref[література]{(4)}: Метричний простір: Метричний
+простір --- це набір \(\mathcal{M}\) із функцією відстані
+\(\textit{dis}\) :
+\$\mathcal{M}\times\mathcal{M}\longrightarrow \mathbb{R}\^{}+ \$, для
+якої виконуються властивості: - нерівність трикутника dis(x, z) ≤
+\(\textit{dis}(x, y) + \textit{dis}(y, z)\) - симетрія
+\(\textit{dis}(x, y) = \textit{dis}(y, x)\).
+
+Examples: - dis = Hamming distance: \$h(v\_1,v\_2) = \$ sum of one-bits
+of \(v_1-v_2\) over \(\mathbb{F}_2\) - dis = set difference: \(\cup\) -
+dis = Levenstein distance
+
+    \hypertarget{min-entropy-average-min-entropy-statistical-distance}{%
+\subsubsection{Min-Entropy, Average Min-Entropy, Statistical
+Distance}\label{min-entropy-average-min-entropy-statistical-distance}}
+
+Означення (min-entropy) (4):
+
+Мінімальною ентропією \(H_\infty(A)\) випадкової величини A називається
+значення:
+
+\(~~~~H_\infty(A) = -\log{\underset{a}{\max}}{Pr[A = a]}\)\\
+\(~~~~~~~~\) де \(\underset{a}{\max}{Pr[A = a]}\) - передбачуваність А.
+
+Означення (Average Min-Entropy) (4):
+
+Середньою ентропією випадкової величини A за умови B називають значення:
+
+\$\overset{\text{~}}{H}\_\infty(A\textbar B) = \$ todo add descrtiption
+
+    \hypertarget{ux441ux442ux430ux442ux438ux441ux442ux438ux447ux43dux430-ux432ux456ux434ux441ux442ux430ux43dux44c}{%
+\subsubsection{Статистична
+відстань}\label{ux441ux442ux430ux442ux438ux441ux442ux438ux447ux43dux430-ux432ux456ux434ux441ux442ux430ux43dux44c}}
+
+Означення: Статистична відстань між двома ймовірнісними розподілами
+\(A_1\) і \(A_2\):
+
+\(~~~~\text{SD}(A_1,A_2) = \frac{1}{2}\sum\limits_{u}|Pr(A_1~=~u)-Pr(A_2~=~u)|\)
+
+Безпека нечіткого екстрактора зазвичай враховує статистичну\\
+\(~~\)відстань між заданим розподілом (ключів екстрактору) і рівномірним
+розподілом U.
+
+    \hypertarget{ux437ux430ux445ux438ux449ux435ux43dux456-ux435ux441ux43aux456ux437ux438-ux442ux430-ux43dux435ux447ux456ux442ux43aux456-ux435ux43aux441ux442ux440ux430ux43aux442ux43eux440ux438}{%
+\subsubsection{Захищені ескізи та нечіткі
+екстрактори}\label{ux437ux430ux445ux438ux449ux435ux43dux456-ux435ux441ux43aux456ux437ux438-ux442ux430-ux43dux435ux447ux456ux442ux43aux456-ux435ux43aux441ux442ux440ux430ux43aux442ux43eux440ux438}}
+
+Захищений ескіз є важливою компонентою нечітких екстракторів. Безпечний
+ескіз є схемою,\\
+яка приймає в якості вхідної інформації зашумлену інформацію \(\omega\),
+наприклад біометричну інформацію,\\
+та створює на її основі ескіз \(s\), який є допоміжним рядком.
+
+Означення: Нечітким ескізом називається набір функцій
+\((\text{SS},\text{Rec})\), які мають наступні властивості: - Фунція
+створення ескізу \(\text{SS}\) на вхідних даних
+\(\omega \in \mathcal{M}\) повертає ескіз\\
+\(s \in \{0,1\}^*\) - Функція відновлення зашумлених даних
+\(\text{Rec}\) для вхідного елементу \(\omega_1 \in \mathcal{M}\) та
+ескізу \(s \in \{0,1\}^*\), повертає рядок
+\(\omega \Longleftrightarrow \text{dist}(\omega_1,\omega)<t\), де t -
+точність нечіткого екстрактора
+
+Захищені схеми ескізу зазвичай використовують коди виправлення помилок,
+причому, захищений ескіз відновлює\\
+вхідні дані \(\omega_1\) до \(\omega ~~ \Longleftrightarrow\) рядок
+\(\omega_1\) є подібним до \(\omega\).\\
+Ескіз \(s\) є публічно доступним, оскільки він це розкриває достатньої
+інформації про секретні дані \(\omega\).\\
+Одним з можливих методів створення безпечного ескізу є БЧХ-коди,
+означення яких наведено нижче:
+
+    \hypertarget{ux43aux440ux438ux43fux442ux43eux433ux440ux430ux444ux456ux447ux43dux430-ux441ux442ux456ux439ux43aux456ux441ux442ux44c-ux431ux435ux437ux43fux435ux447ux43dux438ux445-ux435ux441ux43aux456ux437ux456ux432}{%
+\subsubsection{Криптографічна стійкість безпечних
+ескізів}\label{ux43aux440ux438ux43fux442ux43eux433ux440ux430ux444ux456ux447ux43dux430-ux441ux442ux456ux439ux43aux456ux441ux442ux44c-ux431ux435ux437ux43fux435ux447ux43dux438ux445-ux435ux441ux43aux456ux437ux456ux432}}
+
+Означення: Ескіз \(s\) називається
+\((\mathcal{M},m,\overset{\text{~}}{m},t)\) - безпечним,якщо
+
+\begin{itemize}
+\tightlist
+\item
+  \(\forall ~~ W\) - розподілу над метричним простором \(\mathcal{M}\),
+  з мінімальною ентропією \(m\),зловмисник має перевагу\\
+  обмежену \(2^{-\overset{\text{~}}{m}}\), де
+  \(\overset{\text{~}}{m}~\leq~\overset{\text{~}}{H}_{\infty}(W| \text{SS}(W)\)
+  для відновлення значення \(W\).
+\end{itemize}
+
+    \hypertarget{ux431ux447ux445-ux43aux43eux434}{%
+\subsubsection{БЧХ-код}\label{ux431ux447ux445-ux43aux43eux434}}
+
+и є циклічними кодами, які задаються своїм породжуючим поліномом. Для
+його знаходження необхідно передусім визначити довжину коду
+\({\displaystyle n}\) і мінімальну кодову відстань
+\({\displaystyle d\leqslant n}\). Знайти породжуючий поліном можна
+наступним чином:
+
+Нехай \({\displaystyle \alpha }\) - примітивний елемент поля
+\({\displaystyle GF(q^{m})}\) (тобто
+\({\displaystyle \alpha ^{q^{m}-1}=1,\ \alpha ^{i} = 1,\ i<q^{m}-1}\)),
+нехай \({\displaystyle \eta =\alpha ^{s}}\) - елемент поля
+\({\displaystyle GF(q^{m})}\) порядку \({\displaystyle n}\),
+\({\displaystyle s=(q^{m}-1)/n}\). Тоді нормований поліном
+\({\displaystyle g(x)}\) мінімальної степені над полем
+\({\displaystyle GF(q)}\), коренями якого є \({\displaystyle d-1}\)
+послідовних степеней
+\({\displaystyle \eta ^{l_{0}},\eta ^{l_{0}+1},\ldots ,\eta ^{l_{0}+d-2}}\)
+елемента \({\displaystyle \eta }\) для деякого цілого
+\({\displaystyle l_{0}}\) (в тому числі 0 і 1), є породжуючим поліномом
+БЧХ-коду над полем \({\displaystyle GF(q)}\) з довжиною
+\({\displaystyle n}\) і мінімальною відстанню
+\({\displaystyle d_{0}\geqslant d}\).
+
+Пояснимо, чому у отриманого коду будуть саме такі характеристики
+(довжина коду \({\displaystyle n}\), мінімальна відстань
+\({\displaystyle d_{0}}\)). Справді, як показано у
+\hyperref[література]{(8)}, довжина БЧХ-коду дорівнює порядку елемента
+\({\displaystyle \eta }\), якщо \({\displaystyle d>2}\), і дорівнює
+порядку елемента \({\displaystyle \eta ^{l_{0}}}\), якщо
+\({\displaystyle d=2}\). Оскільки випадок \({\displaystyle d=2}\) нас не
+цікавить (такий код може виявляти, але не може виправляти помилки),
+довжина коду буде дорівнювати порядку елемента
+\({\displaystyle \eta }\), тобто дорівнюватиме \({\displaystyle n}\).
+Мінімальна відстань \({\displaystyle d_{0}}\) може бути більшою за
+\({\displaystyle d}\), коли коренями мінімальних функцій
+\hyperref[література]{(8)} від елементів
+\({\displaystyle \eta ^{l_{0}},\eta ^{l_{0}+1},\ldots ,\eta ^{l_{0}+d-2}}\)
+будуть елементи, які доповнюють послідовність, тобто елементи
+\({\displaystyle \eta ^{l_{0}+d-1},\eta ^{l_{0}+d},\ldots ,\eta ^{l_{0}+d_{0}-2}}\).
+
+Кількість перевірочних символів \({\displaystyle r}\) дорівнює степеню
+\({\displaystyle g(x)}\), кількість інформаційних символів
+\({\displaystyle k=n-r}\), величина \({\displaystyle d}\) називається
+конструктивною відстанню БЧХ-коду. Якщо \({\displaystyle n=q^{m}-1}\),
+то код називається примітивним, інакше, непримітивним.
+
+Так само, як і для циклічного коду, кодовий поліном
+\({\displaystyle c(x)}\) може бути отриманий з інформаційного поліному
+\({\displaystyle m(x)}\) степені не більше \({\displaystyle k-1}\),
+шляхом перемноження \({\displaystyle m(x)}\) і \({\displaystyle g(x)}\).
+
+    \hypertarget{ux43aux43eux434ux438-ux440ux456ux434ux430-ux441ux43eux43bux43eux43cux43eux43dux430-7}{%
+\subsubsection{\texorpdfstring{Коди Ріда-Соломона
+\hyperref[література]{(7)}}{Коди Ріда-Соломона }}\label{ux43aux43eux434ux438-ux440ux456ux434ux430-ux441ux43eux43bux43eux43cux43eux43dux430-7}}
+
+Коди Ріда - Соломона є важливим окремим випадком БЧХ-коду, корені
+породжуючого многочлена якого лежать у тому ж полі, над яким будується
+код. Нехай \(\alpha\) --- елемент поля \(\textstyle GF(q)\), що має
+порядок \(\textstyle n\). Якщо \(\alpha\)~--- примітивний елемент, його
+порядок дорівнює \(q-1\), тобто
+\$\alpha\textsuperscript{\{q-1\}=1,\quad \alpha}i \neq 1,
+0\textless i\textless q-1 \$. Тоді нормований поліном \(g(x)\)
+мінімального ступеня над полем \(\textstyle GF(q)\), коренем якого є
+\(𝑑−1\) послідовних ступенів
+\(\alpha^{l_0}, \alpha^{l_0+1},...,\alpha^{l_0+d-2}\) елемента
+\(\alpha\), є породжуючим многочленом коду Ріда --- Соломона над полем
+\(\textstyle GF(q)\):
+
+\(g(x) = (x - \alpha^{l_0})(x - \alpha^{l_0+1})\dots(x - \alpha^{l_0+d-2}),\)
+
+де \(l_0\) - деяке ціле число (у тому числі 0 і 1), зазвичай обирається
+\(𝑙_0 = 1\). Ступінь многочлена \$ g (x) \$ дорівнює \$ d-1 \$. Довжина
+отриманого коду \(n\), мінімальна відстань \(d\)(є мінімальною з усіх
+відстаней Хеммінга всіх пар кодових слів, див. Лінійний код). Код
+містить \(r=d-1=\deg (g(x))\) перевірочних символів, де \(\deg()\)
+позначає ступінь полінома; число інформаційних символів: \$k = n - r = n
+- d + 1 \$. Таким чином, \(\textstyle d = n - k + 1\) і код Ріда~---
+Соломона є кодом, що має максимальну кодову відстань (є оптимальним у
+сенсі границі Сінглтона). Кодовий поліном \(c(x)\) може бути отриманий з
+інформаційного полінома \(m(x)\),\(\deg m(x) \leqslant k-1\) шляхом
+перемноження \(m(x)\) і \(g(x)\):
+
+\$ c (x) = m (x) g (x) \$.
+
+    \hypertarget{ux43dux435ux447ux456ux442ux43aux456-ux435ux43aux441ux442ux440ux430ux43aux442ux43eux440ux438}{%
+\subsubsection{Нечіткі
+екстрактори}\label{ux43dux435ux447ux456ux442ux43aux456-ux435ux43aux441ux442ux440ux430ux43aux442ux43eux440ux438}}
+
+Означення: Нечітким екстрактором називаються два ймовірнісні алгоритми
+\(\text{Gen}, \text{Rep}\) з наступними властивостями:
+
+\begin{itemize}
+\tightlist
+\item
+  Генеруюча функція \(Gen(x) \rightarrow (R,P)\), на вхідних даних
+  \(x \in \mathcal{M}\), повертає рядок \(R \in \{0,1\}^l\) і допоміжні
+  дані \(P \in \{0,1\}^*\)
+\item
+  Функція відтворення вхідних даних \(Rep\), на вхідному елементі
+  \(\omega_1 \in \mathcal{M}\), і допоміжних даних \(P \in \{0,1\}^*\),
+  повертає рядок \(R\) такий що:\\
+  \(\text{Rep}(\omega_1,P) \rightarrow R~~\text{якщо}~  dis(x,\omega_1)\leq t\)
+\end{itemize}
+
+    \hypertarget{ux43aux440ux438ux43fux442ux43eux433ux440ux430ux444ux456ux447ux43dux430-ux441ux442ux456ux439ux43aux456ux441ux442ux44c-ux43dux435ux447ux456ux442ux43aux438ux445-ux435ux43aux441ux442ux440ux430ux43aux442ux43eux440ux456ux432}{%
+\subsubsection{Криптографічна стійкість нечітких
+екстракторів}\label{ux43aux440ux438ux43fux442ux43eux433ux440ux430ux444ux456ux447ux43dux430-ux441ux442ux456ux439ux43aux456ux441ux442ux44c-ux43dux435ux447ux456ux442ux43aux438ux445-ux435ux43aux441ux442ux440ux430ux43aux442ux43eux440ux456ux432}}
+
+Означення: Нечіткий екстрактор називається
+\((\mathcal{M},m,l,t,\epsilon)\)-безпечним, якщо
+
+\begin{itemize}
+\tightlist
+\item
+  \(\forall ~~ W\) - розподілу вхідних даних над метричним простором
+  \(\mathcal{M}\), з\\
+  мінімальною ентропією \(m\), вихідні дані (за виключенням допоміжних),
+  розподілені\\
+  згідно з розподілом \(R\), і виконуються умови:
+
+  \begin{itemize}
+  \tightlist
+  \item
+    Статистична відстань між \(R\) та \(U_l\) - рівномірним\\
+    розподілом розмірності \(l\), є незначною навіть якщо\\
+    допоміжні дані \(P\) є доступними зловмиснику. Тобто,
+    \(\textbf{SD}((R,P),(U_l,P)) \leq \epsilon\), де \(\epsilon\) є
+    малим числом.
+  \end{itemize}
+\end{itemize}
+
+    \hypertarget{ux43cux43eux434ux435ux43bux44c-face-recognition}{%
+\subsubsection{Модель Face
+recognition}\label{ux43cux43eux434ux435ux43bux44c-face-recognition}}
+
+Source-код моделі: \url{https://github.com/ageitgey/face_recognition}
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\tightlist
+\item
+  Модель Face recognition є бібліотекою з відкритим кодом, ліцензованою
+  згідно з \(\text{MIT License}\)
+\item
+  Модель побудована на основі deep face-recognition model, реалізованій
+  у бібліотеці \url{http://dlib.net/}
+\item
+  Більш детально розглянуто метод
+  \texttt{face\_recognition.api.face\_distance}, для отримання формату
+  представлення face-вектору \(v\):
+  \(v \in \mathbb{F}_2^{128}; \space d(v_1,v_2) = ||v_2-v_1||, \space \mathbb{F}_2 = \{0,1\}\)
+\item
+  Відповідно до документації бібліотеки \texttt{dlib} та методу
+  \texttt{face\_recognition.api.face\_distance}, для отримання
+  статистики, яка визначає подібність обличь за їх face-вектором, автор
+  використовує базову Евклідову метрику у просторі розмірності \(128\).
+\end{enumerate}
+
+    \hypertarget{ux43eux43fux438ux441-ux441ux435ux440ux435ux434ux43eux432ux438ux449ux430-ux440ux43eux437ux440ux43eux431ux43aux438}{%
+\subsection{Опис середовища
+розробки}\label{ux43eux43fux438ux441-ux441ux435ux440ux435ux434ux43eux432ux438ux449ux430-ux440ux43eux437ux440ux43eux431ux43aux438}}
+
+Environment info: - Platform: \texttt{Docker} - Container image:
+\texttt{python:3.10} - SSH port: \texttt{2222} - IDE:
+\texttt{PyCharm\ 2023.1\ RC\ 2} - Base: \texttt{Windows\ 11\ (WSL2)}
+
+dependencies (direct): - itertools - numpy\textasciitilde=1.24.2 -
+opencv-python\textasciitilde=4.7.0.72 - face\_recognition -
+Pillow\textasciitilde=9.4.0 - PIL - hashlib
+
+dependencies (transitive, manually installed) - ffmpeg - CMake - dlib -
+libsm6 - libxext6 - libsasl2-dev - python-dev - libldap2-dev -
+libssl-dev - openssh-server
+
+\hypertarget{ux43fux435ux440ux435ux43bux456ux43a-ux43aux43bux430ux441ux456ux432-ux442ux430-ux43cux43eux434ux443ux43bux456ux432-ux43fux440ux43eux435ux43aux442ux443}{%
+\subsection{Перелік класів та модулів
+проекту}\label{ux43fux435ux440ux435ux43bux456ux43a-ux43aux43bux430ux441ux456ux432-ux442ux430-ux43cux43eux434ux443ux43bux456ux432-ux43fux440ux43eux435ux43aux442ux443}}
+
+python Modules: - extractors.py: Реалізація нечіткого екстрактора -
+cache.py: Кешування обєктів, пришвидшення повторного виконання тестів -
+logger.py - main.py: - testing.py: додаткові класи для тестування
+нечіткого екстрактора - test\_face\_recognition.py: unit-тести окремих
+класів та модулів
+
+python Classes: - Cache - кешування обєктів - FrameIterator - ітерування
+зображень у відео-файлі - FaceVectorExtractor - допоміжні функції для
+отримання face-вектору за зображенням - FuzzyExtractorFaceRecognition -
+клас нечіткого екстрактора. Основна логіка екстрактора зосереджена у
+даному класі - LogFormatter - форматування виводу (stdin/log file) -
+TestFaceVectorExtractor - основний тестовий клас - TestCases -
+допоміжний клас для проведення тестування
+
+    \hypertarget{ux43eux43fux438ux441-ux441ux442ux440ux443ux43aux442ux443ux440ux438-ux43dux435ux447ux456ux442ux43aux43eux433ux43e-ux435ux43aux441ux442ux440ux430ux43aux442ux43eux440ux430}{%
+\subsection{Опис структури нечіткого
+екстрактора}\label{ux43eux43fux438ux441-ux441ux442ux440ux443ux43aux442ux443ux440ux438-ux43dux435ux447ux456ux442ux43aux43eux433ux43e-ux435ux43aux441ux442ux440ux430ux43aux442ux43eux440ux430}}
+
+\begin{itemize}
+\tightlist
+\item
+  Input data preprocessing:
+
+  \begin{enumerate}
+  \def\labelenumi{\arabic{enumi}.}
+  \tightlist
+  \item
+    Перетворення вхідних даних до вигляду:
+    \texttt{list{[}PIL.Image.Image{]}}
+  \item
+    Перетворення: \texttt{PIL.Image.Image}
+    \(\overset{convert: RGB}{\longrightarrow}\) \texttt{np.ndarray}
+  \item
+    Визначення face-вектору для кожного з зображень. Зображення для яких
+    не було знайдено жодного face-вектору, або було знайдено декілька
+    face-векторів, далі не обробляються.
+  \item
+    Повернення послідовності face-векторів у вигляді
+    \texttt{np.ndarray{[}np.ndarray{]}}
+  \end{enumerate}
+\end{itemize}
+
+    \begin{itemize}
+\tightlist
+\item
+  Face vector preprocessing (Input data: \(V\) -
+  \texttt{np.ndarray{[}np.ndarray{]}}):
+
+  \begin{enumerate}
+  \def\labelenumi{\arabic{enumi}.}
+  \tightlist
+  \item
+    Обчислення
+    \(S = \{(\#|v_1-v_2|, v_1, v_2) \space | \space v_1, v_2 \in V, v_1\neq v_2\}\)
+    (1)
+  \item
+    Обчислення викидів вибірки \(S\) (\(S^*\)) за значеннями першої
+    координати:
+
+    \begin{itemize}
+    \item
+      Нехай \(\mu\) - середнє значення вибірки за першою координатою:
+      \(\mu = \#\{v[0]\space,\space v \in S\}\),
+
+      \(\sigma\) - стандартне відхилення вибірки за першою координатою:
+      \(\sigma = \sqrt{\#\{(v[0]-\mu)^2\space,\space v \in S\}}\)
+
+      \(\sigma_0\) - максимальне стандартне відхилення, параметр
+    \item
+      \(v \in S\) будемо вважати викидом, якщо для \(v\) виконується:
+      \(|\mu-v[0]| > \sigma_0\)
+    \end{itemize}
+  \item
+    Створення вибірки \(S_1\) за елементами вибірки
+    \(H = S\setminus S^*\):
+
+    \begin{itemize}
+    \tightlist
+    \item
+      \(S_1 = \{(|\{s| v=s[1] \lor v=s[2], \space s \in H\}|, v) \space|\space v \in \{s[1],s[2] \space|\space s \in H\}\}\)
+    \end{itemize}
+  \item
+    Знаходження викидів вибірки \(S_1\): \(S_1^*\)
+  \item
+    Повернення \(\{v[1]\space|\space v \in S_1 \setminus S_1^*\}\) (тип
+    даних: \texttt{np.ndarray{[}np.ndarray{]}})
+  \end{enumerate}
+
+  \begin{itemize}
+  \tightlist
+  \item
+    Передумови:
+
+    \begin{enumerate}
+    \def\labelenumi{\arabic{enumi}.}
+    \tightlist
+    \item
+      Для обчислення методу (1), необхідною передумовою є взаємна
+      незалежність координат face-вектору. Оскільки face-vector належить
+      простору \((-1,1)^{128} \subset \mathbb{Q}^{128}\), з метрикою
+      Евкліда, можна зробити висновок, що кожна координата має однаковий
+      вплив на ідентифікацію обличчя. Також, відповідно до проведених
+      тестів (dlib) не було знайдено кореляції між координатами
+      face-вектору, що дозволяє зробити припущення про їх незалежність.
+    \end{enumerate}
+  \item
+    Зауваження
+
+    \begin{enumerate}
+    \def\labelenumi{\arabic{enumi}.}
+    \setcounter{enumi}{1}
+    \tightlist
+    \item
+      Для більш точної побудови ключа, параметр \(\sigma_0\) може бути
+      зменшений (значення за замовчуванням: 0.7). Дана змінна є одним з
+      параметрів моделі нечіткого екстрактора.
+    \end{enumerate}
+  \end{itemize}
+\end{itemize}
+
+    \begin{itemize}
+\tightlist
+\item
+  Primary hash (первинний хеш): (Input data:
+  \texttt{np.ndarray{[}np.ndarray{]}})
+
+  \begin{enumerate}
+  \def\labelenumi{\arabic{enumi}.}
+  \item
+    Нехай простір \(M \subset (-1,1)^{128} \subset \mathbb{Q}^{128}\)
+    розбито на множини:
+
+    \begin{enumerate}
+    \def\labelenumii{(\arabic{enumii})}
+    \item
+      \(M_{i_1,i_2,...,i_{128}}\):
+      \(\space \underset{(i_1,..,i_{128}) \in I}{\large{\cup}}  {\small{M}_{i_1,i_2,...,i_{128}}} = M\)
+      (\(I\) - множина індексів) за правилом:
+    \item
+      \(M_{i_1,i_2,...,i_{128}}\) =
+      \((i_1d,(i_1+1)d)\times(i_2d,(i_2+1)d)\times...\times(i_{128}d,(i_{128}-1)d)\)
+      - (гіперкуб зі стороною \(d\); \(d\) - параметр моделі нечіткого
+      екстрактора).
+    \end{enumerate}
+
+    Очевидно, для покриття простору (2), виконується (1), якщо M не
+    містить граней гіперкубів \(M_{i_1,i_2,...,i_{128}}\). У
+    реалізованому екстракторі, дане твердження є передумовою прийняття
+    вхідних даних:
+
+    \begin{quote}
+    Якщо принаймні одна координата face-вектору знаходиться на перетині
+    граней двох або більшої кількості гіперкубів, даний face-вектор не
+    може бути оброблені нечітким екстрактором, тому вхідні дані будуть
+    відхилені. (На практиці, ймовірність такої події дуже мала, під час
+    тестування вхідні дані не були відхилені жодного разу).
+    \end{quote}
+
+    Параметр \(d \in (0,1)\), є параметром нечіткого екстрактора, який
+    впливає на рівень, на якому подібні face-вектори будуть вважатися
+    ідентичними.
+  \item
+    Нехай \(\text{std_max},\alpha\) - параметри нечіткого екстрактора.
+    Нехай \(\overline{v},\overset{\text{~}}{v}\)
+  \end{enumerate}
+
+  \begin{itemize}
+  \tightlist
+  \item
+    вектори розмірності 128, \(\overline{v}\) - містить середні
+    значення, \(\overset{\text{~}}{v}\) - стандартні відхилення
+    face-векторів по кожній координаті.
+
+    \begin{itemize}
+    \tightlist
+    \item
+      Якщо для вхідних даних виконується:
+      \(\#\{\overset{\text{~}}{v}[i]>\text{std_max}\space|\space i = \overline{\small{1,\dim{\overset{\text{~}}{v}}}}\} \gt  \alpha \dim(\overset{\text{~}}{v})\),
+      модель нечіткого екстрактора відхилить вхідні дані, оскільки для
+      обраних параметрів стандартне відхилення деякої множини координат
+      перевищує задане максимально допустиме значення.
+    \end{itemize}
+  \end{itemize}
+
+  \begin{enumerate}
+  \def\labelenumi{\arabic{enumi}.}
+  \setcounter{enumi}{2}
+  \tightlist
+  \item
+    До даних (\(V\)) застосовано наступне перетворення:
+
+    \begin{itemize}
+    \item
+      Нехай
+      \(v \in V, v \in M_{I_0}, I_0 \in I, I_0 = (i_1,i_2,...,i_{128})\),
+      \(f: V \rightarrow M\)
+    \item
+      Побудуємо функцію \(f\):
+
+      \(f(v): v \longrightarrow (i_1+\frac{d}{2},i_2+\frac{d}{2},..,i_{128}+\frac{d}{2})\)
+
+      Таким чином, кожен face-вектор, який належить гіперкубу
+      \(M_{I_0}\), буде відображено у центр \(M_{I_0}\)
+    \end{itemize}
+  \item
+    Алгоритм повертає представлення значення
+    \(f(\space\overline{v}\space)\) у вигляді послідовності байтів
+    \texttt{bytes}
+  \end{enumerate}
+
+  \begin{itemize}
+  \tightlist
+  \item
+    Зауваження:
+
+    \begin{itemize}
+    \tightlist
+    \item
+      Покриття простору підмножинами у вигляді гіперкубів було обрано на
+      перевагу розбиттю простору на сфери, оскільки реалізація даного
+      розбиття є досить простою для просторів розмірності більшої за 3,
+      а обчислювана складність задачі є найменшою серед усіх можливих
+      розбиттів: \(O(1)\). Задача ефективного покриття простору
+      розмірності 128 на сфери, на даний момент не була розв'язана. Тому
+      не існує ефективного алгоритму за яким було б можливо побудувати
+      таке розбиття.
+    \item
+      За рахунок розбиття (1), вектори \(v_1,v_2 \in V\), однаково
+      віддалені від центру \(M_{I_0}\): \(c_0\), такі що
+      \(|v_1-c_0|\leq d,|v_2-c_0|\leq d\)), можуть бути відображені у
+      центри різних елементів розбиття, що вважатиметься помилкою
+      обчислень. Для виправлення даної помилки реалізовано метод, опис
+      якого наведено нижче.
+    \item
+      Primary hash не є стійким до взяття прообразу
+    \item
+      Primary hash не є стійким до колізій
+    \item
+      Primary hash не є стійким до взяття другого прообразу
+    \end{itemize}
+  \end{itemize}
+\end{itemize}
+
+    \begin{itemize}
+\tightlist
+\item
+  Primary hash error correction, Input data:
+  \texttt{np.ndarray{[}np.ndarray{]}}
+
+  \begin{enumerate}
+  \def\labelenumi{\arabic{enumi}.}
+  \tightlist
+  \item
+    Виконання \(N\) незалежних тестів \texttt{hash\_primary}, побудова
+    вибірки \(H\) яка містить \(N\) хеш значень.
+  \item
+    Обчислення ймовірностей \(p_h\) появи значень
+    \(h \in \text{set}(H)\)
+  \item
+    Нехай \(\text{max_unique_hashes}\) - параметр моделі нечіткого
+    екстрактора, який визначає максимально можливу кількість унікальних
+    хеш-значень, допустиму у вибірці \(H\)
+  \item
+    Відповідно, якщо вхідні дані задовільняють нерівність:
+    \(|set(H)| \gt \text{max_unique_hashes}\): алгоритм відхиляє вхідну
+    послідовність face-векторів. Дана нерівність справджується, якщо
+    після обробки face-векторів та аналізу вибірки на предмет викидів,
+    оцінка хеш-значення є недостатньо ефективною. (за замовчуванням,
+    \(\text{max_unique_hashes} = 1000\))
+  \item
+    Нехай \(\text{p_a_min} \in (0,1)\) - параметр моделі нечіткого
+    екстрактора
+  \item
+    Якщо \(\exists h \in H: p_h>\text{p_a_min}\), результатом роботи
+    алгоритму є значення \(h\)
+  \item
+    Інакше, знайдемо значення \(h,l \in H\), які мають найбільшу
+    ймовірність появи \(p_h,p_l\).
+  \item
+    Визначимо значення ентропії Шенона (над алфавітом, який містить всі
+    можливі байти), послідовностей \(h,l \in H\): \(e_h, e_l\)
+  \item
+    Результатом роботи алгоритму є вектор з найбільшим значенням
+    ентропії. Якщо \(e_h = e_l\), повертається послідовність випадкова
+    послідовність (\(l\) або \(h\)).
+  \end{enumerate}
+\end{itemize}
+
+    \begin{itemize}
+\tightlist
+\item
+  Secondary hash
+
+  \begin{itemize}
+  \tightlist
+  \item
+    Перетворення вихідних даних алгоритму primary hash та додаткових
+    перевірочних символів, отримання безпечного криптографічного ключа.
+  \end{itemize}
+
+  \begin{enumerate}
+  \def\labelenumi{\arabic{enumi}.}
+  \tightlist
+  \item
+    Нехай \(\text{check_symbols_count}\) - параметр нечіткого
+    екстрактора, який відповідає за кількість перевірочних символів, які
+    будуть згенеровані для вихідних даних \(\text{hash_primary}\)
+    використовуючи код Ріда-Соломона. (за замовчуванням,
+    \(\text{check_symbols_count} = 32\), тобто максимально дозволена
+    похибка обчислення \(\text{hash_primary}\): 16 координат
+    face-вектору)
+  \item
+    Вхідними даними алгоритму \(\text{hash_secondary}\) є первинне
+    \(\text{hash_primary}\), та послідовність перевірочних символів
+    \(\text{check_symbols}\).
+  \item
+    Обчислюється рядок \(\text{hash_primary}+\text{check_symbols}\),
+    помилки рядка виправляються за допомогою стандартного коду
+    Ріда-Соломона. Якщо кількість помилок перевищує
+    \(\frac{\text{check_symbols_count}}{2}\), код Ріда-Соломона не
+    декодує вхідні дані, тому під час виникнення помилки дані будуть
+    відхилені (користувач не пройшов аутентифікацію).
+  \item
+    Результатом роботи методу hash\_secondary, є послідовність байтів,
+    яка може бути безпечно використана для
+    ініціалізації/шифрування/створення цифрового підпису користувача та
+    інших криптографічних алгоритмів. Метод \texttt{hash\_secondary}
+    додатково містить аргумент \texttt{salt} (сіль, яка буде використана
+    під час створення безпечного хеш-значення SHA256), збереження
+    послідовностей \texttt{salt} та \texttt{check\_symbols} передбачено
+    у окремій базі даних без необхідності додаткового шифрування.
+  \end{enumerate}
+
+  \begin{itemize}
+  \tightlist
+  \item
+    Властивості:
+
+    \begin{itemize}
+    \tightlist
+    \item
+      \texttt{hash\_secondary} є стійким до колізій
+    \item
+      \texttt{hash\_secondary} є стійким до взяття прообразу
+    \item
+      \texttt{hash\_secondary} є стійким до взяття другого прообразу
+    \end{itemize}
+  \item
+    Зауваження:
+
+    \begin{itemize}
+    \tightlist
+    \item
+      Алгоритм \texttt{hash\_secondary} генерує криптографічно безпечний
+      ключ, що дозволяє уникнути потенційних вразливостей, пов'язаних з
+      отриманням зловмисником доступу до ключа: за значенням ключа,
+      згенерованого \texttt{hash\_secondary}, не існує ефективного
+      алгоритму знаходження face-вектору користувача.
+    \item
+      Використання солі (\texttt{salt}) під час хешування
+      \(\text{hash_primary}\) рекомендується, оскільки це дозволяє
+      запобігти вразливостям типу \(\text{Rainbow table attack}\)
+    \end{itemize}
+  \end{itemize}
+\end{itemize}
+
+    \hypertarget{ux430ux43dux430ux43bux456ux437-ux43aux440ux438ux43fux442ux43eux433ux440ux430ux444ux456ux447ux43dux43eux457-ux431ux435ux437ux43fux435ux43aux438-ux43fux43eux431ux443ux434ux43eux432ux430ux43dux43eux433ux43e-ux43dux435ux447ux456ux442ux43aux43eux433ux43e-ux435ux43aux441ux442ux440ux430ux43aux442ux43eux440ux430.}{%
+\subsubsection{Аналіз криптографічної безпеки побудованого нечіткого
+екстрактора.}\label{ux430ux43dux430ux43bux456ux437-ux43aux440ux438ux43fux442ux43eux433ux440ux430ux444ux456ux447ux43dux43eux457-ux431ux435ux437ux43fux435ux43aux438-ux43fux43eux431ux443ux434ux43eux432ux430ux43dux43eux433ux43e-ux43dux435ux447ux456ux442ux43aux43eux433ux43e-ux435ux43aux441ux442ux440ux430ux43aux442ux43eux440ux430.}}
+
+Надалі будемо вважати, що значення face-векторів, згенерованих
+бібліотекою \texttt{dlib}, мають рівномірний розподіл \(U(0,1)^{128}\)
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\tightlist
+\item
+  Аналіз статистичної відстані між розподілом ключів, які генеруються
+  нечітким екстрактором, та рівномірним розподілом \(U\):
+
+  \begin{itemize}
+  \tightlist
+  \item
+    Ключові моменти:
+
+    \begin{enumerate}
+    \def\labelenumii{\arabic{enumii}.}
+    \tightlist
+    \item
+      Відображення простору face-векторів у методі
+      \texttt{hash\_primary}
+    \item
+      Виправлення помилок у вихідному рядку за допомогою кодів
+      Ріда-Соломона.
+    \item
+      Хешування вихідних даних (SHA256+salt)
+    \end{enumerate}
+  \item
+    Аналіз відображення, реалізованого у методі \texttt{hash\_primary}:
+
+    \begin{enumerate}
+    \def\labelenumii{\arabic{enumii}.}
+    \tightlist
+    \item
+      Вхідними даними є вектори розмірності 128 з рівномірного росподілу
+      \(U(0,1)^{128}\)
+    \item
+      Кожен вектор відображається у центр деякого гіперкубу з довжиною
+      ребра \(d\). Відображення переводить однакову кількість векторів
+      до кожного з гіперкубів розбиття, тому у вихідних даних
+      зберігається рівномірний розподіл даних. Статистична відстань
+      \(\text{SD}(A_1,A_2) = \frac{1}{2}\sum\limits_{u}|Pr(A_1~=~u)-Pr(A_2~=~u)|\),
+      рівна \(\frac{1}{2}\frac{1}{d^{128}}|0~-~d^{128}|~=~\frac{1}{2}\).
+      Отже, розподіл вихідних даних не дорівнює \(U(0,1)^{128}\), але
+      низьке значення статистичної відстані вказує на значну подібність
+      даних розподілів. Тому, відповідно до\\
+      аналізу статистичної відстані, відображення побудовано коректно
+      (дискретизація \(U(0,1)^{128}\)).
+    \end{enumerate}
+  \item
+    Аналіз перетворення коду Ріда Соломона
+
+    \begin{enumerate}
+    \def\labelenumii{\arabic{enumii}.}
+    \tightlist
+    \item
+      Вхідними даними є значення \texttt{hash\_primary} з рівномірного
+      росподілу, отриманого дискретизацією \(U(0,1)^{128}\), та
+      послідовність перевірочних символів \(s\). Оскільки значення для
+      яких були згенеровані перевірочні символи є нормально
+      розподіленими, враховуючи властивості БЧХ-кодів, будемо вважати що
+      послідовність \(s\) також є рівномірно розподіленою величиною.
+    \item
+      Тоді для кожної пари \((x,s)\), код Ріда-Соломона виправляє
+      фіксовану кількість помилок, або відхиляє вхідні дані. Розглядаючи
+      простір вхідних рядків з метрикою \(L\) - відстань Левенштейна,
+      приходимо до висновку, що
+      \(\forall x \in \mathcal{M}, \forall s \in \{0,1\}^* - \text{фіксованого}\):
+      Код Ріда-Соломона перетворює однакову кількість рядків \(x\) у
+      рядок, якому відповідає послідовність перевірочних символів
+      (рядки, у яких значення метрики Левенштейна менше ніж задане
+      фіксоване значення \(m\), причому кількість перевірочних символів
+      \(|s| \geq 2m\)). Тому при перетворенні вхідних даних за допомогою
+      кода Ріда-Соломона, рівномірна розподіленість зберігається.
+    \end{enumerate}
+  \item
+    Хешування за допомогою \(\text{SHA256} + \text{salt}\).
+
+    \begin{enumerate}
+    \def\labelenumii{\arabic{enumii}.}
+    \tightlist
+    \item
+      Вважатимемо, що послідовність \(\text{salt}\) є рівномірно
+      розподіленою величиною.
+    \item
+      За означенням, \(\text{SHA256}\) є криптографічно безпечною хеш
+      функцією, з чого випливає наступна властивість:\\
+      SHA256 перетворює вхідні рядки, які є рівномірно розподіленими, у
+      послідовність хеш-символів, яка також є рівномірно розподіленою
+      величиною.\\
+      Тому, перетворення хешування (\(\text{SHA256} + \text{salt}\)),
+      зберігає рівномірний розподіл вхідних даних, за у мови що
+      послідовність \(\text{salt}\) є рівномірно розподіленою величиною.
+    \end{enumerate}
+  \item
+    \(\Longrightarrow\) Отже, за результатом аналізу статистичної
+    відстані розподілу ключів, можемо зробити висновок про відсутність
+    вразливостей пов'язаних з нерівномірною ймовірністю отримання деяких
+    ключів. Тому нечіткий екстрактор (з точки зору розподілу ключів), є
+    криптографічно безпечним.
+  \end{itemize}
+\item
+  Аналіз на криптографічну безпеку з точки зору хеш-функцій.
+
+  \begin{itemize}
+  \tightlist
+  \item
+    Вимоги до будь-якого криптографічно стійкого нечіткого екстрактора,
+    включають деякі властивості\\
+    криптографічно безпечних хеш-функцій:
+
+    \begin{enumerate}
+    \def\labelenumii{\arabic{enumii}.}
+    \tightlist
+    \item
+      Стійкість до взяття першого прообразу
+    \item
+      Стійкість до колізій
+    \item
+      Стійкість до взяття другого прообразу
+    \end{enumerate}
+  \item
+    Стійкість до взяття першого прообразу:\\
+    Дана властивість випливає з криптографічної безпеки функції
+    \(\text{SHA256}\), оскільки вхідні дані\\
+    даного алгоритму є рівномірно розподіленими.
+  \item
+    Стійкість до колізій:\\
+    \(~~\) Для алгоритму нечіткого екстрактора можна стверджувати про
+    стійкість до колізій елементів, які не є\\
+    \(~~\) подібними у метричному просторі \(\mathcal{M}\) (подібними є
+    елементи, для яких значення метрики\\
+    \(~~\) простору \(\mathcal{M}\) менше заданого порогового значення
+    \(d\), яке є точністю нечіткого екстрактора)
+  \item
+    Стійкість до взяття другого прообразу:\\
+    Алгоритм є стійким до взяття другого прообразу \(\forall\) вхідних
+    рядків \(x,x_1~\in~\mathcal{M}\), які не є подібними. Тобто, не
+    існує ефективного алгоритму отримання рядку \(x_1 \not \simeq x\),
+    для якого значення ключа є рівне значенню ключа вхідних даних \(x\)
+  \end{itemize}
+\end{enumerate}
+
+    \begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\setcounter{enumi}{2}
+\tightlist
+\item
+  Аналіз безпеки ескізу нечіткого екстрактора:
+
+  \begin{itemize}
+  \tightlist
+  \item
+    Нехай задано Код Ріда-Соломона з параметрами:
+
+    \begin{itemize}
+    \tightlist
+    \item
+      \(n\) - кількість символів рядка, що кодується, причому
+      \(n = 2^m-1\)
+    \item
+      \(t\) - кількість перевірочних символів
+    \end{itemize}
+  \item
+    Нехай \(\mathscr{U} = GF(2^m)^*\) - скінченне поле порядку \(m\)
+  \item
+    Нехай \(SDif(\mathscr{U})\) - метричний простір з метрикою, яка
+    повертає кількість елементів у симетричній різниці множин
+    \(s,s_1~\in~\mathscr{U}\) на всіх підмножинах множини
+    \(\mathscr{U}\)
+  \item
+    Тоді Код Ріда-Соломона, як часний випадок БЧХ-кодів, є\\
+    в середньому \((SDif(\mathscr{U}),m,m-t\log{n+1},t)\) - безпечним
+    ескізом. (Theorem 6.3 для PinSketch з ресурсу (10))
+  \item
+    Згідно з теоремою, даний безпечний ескіз має більший рівень
+    ентропії, і, відповідно, є більш безпечним для меншої кількості
+    перевірочних символів \(t\). У проекті за замовчуванням використано
+    32 перевірочні символи, що складає \(6.25\%\) від розміру вхідних
+    даних алгоритму.
+  \end{itemize}
+\end{enumerate}
+
+    \hypertarget{fuzzyextractor-ux432ux438ux43cux43eux433ux438-ux434ux43e-ux432ux445ux456ux434ux43dux438ux445-ux434ux430ux43dux438ux445}{%
+\subsubsection{FuzzyExtractor: Вимоги до вхідних
+даних}\label{fuzzyextractor-ux432ux438ux43cux43eux433ux438-ux434ux43e-ux432ux445ux456ux434ux43dux438ux445-ux434ux430ux43dux438ux445}}
+
+Для корректної побудови ключа нечітким екстрактором, необхідними є також
+початкові умови дo вхідних даних:
+
+\begin{itemize}
+\tightlist
+\item
+  Повна видимість та гарна освітленість обличчя
+\item
+  Відсутність інших людей на зображеннях
+\item
+  Бажано монотонний фон та відсутність кольорового освітлення
+\end{itemize}
+
+    \hypertarget{ux430ux43dux430ux43bux456ux437-ux435ux444ux435ux43aux442ux438ux432ux43dux43eux441ux442ux456-ux43fux43eux431ux443ux434ux43eux432ux430ux43dux43eux457-ux43cux43eux434ux435ux43bux456}{%
+\subsubsection{Аналіз ефективності побудованої
+моделі}\label{ux430ux43dux430ux43bux456ux437-ux435ux444ux435ux43aux442ux438ux432ux43dux43eux441ux442ux456-ux43fux43eux431ux443ux434ux43eux432ux430ux43dux43eux457-ux43cux43eux434ux435ux43bux456}}
+
+\begin{itemize}
+\tightlist
+\item
+  Часова складність реалізованого алгоритму (worst-case):
+  \(O(n+n^2+nA+B+C)\), де
+
+  \begin{itemize}
+  \tightlist
+  \item
+    n - кількість вхідних зображень
+  \item
+    A - часова складність алгоритму отримання face-вектору бібліотеки
+    dlib.
+  \item
+    B - часова складність алгоритму SHA512
+  \item
+    C - часова складність роботи коду Ріда-Соломона
+  \end{itemize}
+\item
+  Просторова складність нечіткого екстрактора: O(n)
+
+  \begin{itemize}
+  \tightlist
+  \item
+    n - кількість вхідних зображень
+  \end{itemize}
+\item
+  Середній час створення ключа на даних, які містять 30 зображень:
+
+  \begin{itemize}
+  \tightlist
+  \item
+    A: \(0.3~-~1.1\) (s) в залежності від розміру зображення
+  \item
+    B: \(0.1\) (ms)
+  \item
+    C: \(0.1\) (ms)
+  \item
+    Алгоритм нечіткого екстрактора: \(10~-~33\) (s)
+  \end{itemize}
+\item
+  Середній час перевірки ключа на даних, які містять 5 зображень:
+  \(1.6~-~5.6\) (s)
+\item
+  Час виконання було протестовано на docker-контейнері, без викорситання
+  GPU ресурсів.
+
+  \begin{itemize}
+  \tightlist
+  \item
+    cpu: \texttt{AMD\ Ryzen\ 5/5600H}
+  \end{itemize}
+\end{itemize}
+
+    \begin{itemize}
+\item
+  Параметри моделі нечіткого екстрактора:
+
+  \begin{enumerate}
+  \def\labelenumi{\arabic{enumi}.}
+  \tightlist
+  \item
+    \(\sigma_0 \in \mathbb{R}^+\setminus \{0\}\) = 0.7
+  \item
+    \(d \in (0,1)\) = 0.055
+  \item
+    \(\text{max_unique_hashes} \in \mathbb{N}\cup \{-1\}\) = -1
+  \item
+    \(\text{p_a_min} \in (0,1)\) = 0.6
+  \item
+    \(\text{check_symbols_count} \in \mathbb{N}\) = 32
+  \item
+    \(\text{n_tests} \in \mathbb{N}\) = 250
+  \item
+    \(\text{sample_size} \in (0,1]\) = 0.7
+  \item
+    \(\text{min_images} \in \mathbb{N}\) = 5
+  \item
+    \(\alpha \in (0,1)\) = 0.5
+  \end{enumerate}
+\end{itemize}
+
+    \hypertarget{ux43fux440ux438ux43aux43bux430ux434ux438-ux432ux438ux43aux43eux440ux438ux441ux442ux430ux43dux43dux44f}{%
+\subsubsection{Приклади
+використання}\label{ux43fux440ux438ux43aux43bux430ux434ux438-ux432ux438ux43aux43eux440ux438ux441ux442ux430ux43dux43dux44f}}
+
+\begin{itemize}
+\tightlist
+\item
+  Користувач бажає закодувати файл за допомогою алгоритму AES.\\
+  Ключ для алгоритму генерується за допомогою класу FuzzyExtractor.
+  Оскільки секретний ключ базується на біометричних даних, користувачу
+  не потрібно запам'ятовувати пароль.\\
+  Натомість для декодування файлу потрібно пройти тест розпізнавання
+  обличчя.
+\item
+  Користувач бажає створити пару ключів для алгоритму ECDSA для
+  підписання документа.\\
+  Зі сторони сетрифікаційного агентства використовується клас
+  FuzzyExtractor.\\
+  Тоді можна створити пару ключів на основі face-вектору користувача (та
+  послідовності salt). Причому, якщо користувач бажає підписати інший
+  документ (без наявності закритого та відкритого ключів), це буде
+  набагато простіше, оскільки користувачеві потрібно буде пройти тест
+  розпізнавання обличчя для отримання ключа сертифікату.
+\item
+  Автентифікація користувачів на деякому web-ресурсі. Server-side
+  web-ресурсу зберігає послідовності\\
+  \(\text{salt}\) та \(\text{check_symbols}\), які є доступними за
+  запитом всім користувачам. Клієнт проходить\\
+  біометричну аутентифікацію, і отримує ключ, який є спільним секретом
+  клієнта і сервера.
+\end{itemize}
+
+    \hypertarget{ux456ux43cux456ux442ux430ux446ux456ux439ux43dux456-ux435ux43aux441ux43fux435ux440ux438ux43cux435ux43dux442ux438}{%
+\subsubsection{Імітаційні
+експерименти}\label{ux456ux43cux456ux442ux430ux446ux456ux439ux43dux456-ux435ux43aux441ux43fux435ux440ux438ux43cux435ux43dux442ux438}}
+
+\begin{itemize}
+\tightlist
+\item
+  Теоретичний розподіл вхідних даних: Теоретичний розподіл зображень є
+  рівномірним за значенням face-вектору. Теоретичний розподіл
+  послідовності \(\text{salt}\) є рівномірним за значенням кожного
+  регістру.
+\item
+  Алгоритми, які використовувалися для обробки модельованих даних:
+
+  \begin{enumerate}
+  \def\labelenumi{\arabic{enumi}.}
+  \tightlist
+  \item
+    Face bounding box (\texttt{dlib} implementation)
+  \item
+    Face image to face vector mapping (\texttt{face-recignition}
+    package)
+  \end{enumerate}
+\item
+  Кількість повторних моделювань для кожного експерименту: порядку 30
+  моделювань для кожного набору вхідних даних.
+\item
+  Узагальнені характеристики якості, які підраховувались:
+
+  \begin{itemize}
+  \tightlist
+  \item
+    Неможливість візуального порівняння вихідних даних ідентичного
+    користувача.
+  \item
+    Значна статистична відстань розподілу ключів від рівномірного для
+    корректного набору вхідних даних.
+  \item
+    Можливість створення та відтворення секретного ключа з використанням
+    солі (\(\text{salt}\))
+  \item
+    Можливість відновлення ключа за різними даними ідентичного
+    користувача.
+  \item
+    Неможливість відновлення ключа одного користувача з використанням
+    даних іншого користувача
+  \item
+    Значення ентропії для послідовності ключа та перевірочних символів
+  \item
+    Неідентичність вихідних даних алгоритму для різних вхідних даних
+    ідентичного користувача
+  \end{itemize}
+\end{itemize}
+
+Більшість тестових випадків реалізовано у репозиторії за посиланням:
+https://github.com/al3xkras/fuzzy-extractors
+
+    \hypertarget{ux43fux440ux438ux43aux43bux430ux434-ux434ux43eux43fux43eux43cux456ux436ux43dux438ux445-ux437ux43dux430ux447ux435ux43dux44c-ux44fux43aux456-ux433ux435ux43dux435ux440ux443ux44eux442ux44cux441ux44f-ux432-ux43fux440ux43eux446ux435ux441ux456-ux440ux43eux431ux43eux442ux438-ux430ux43bux433ux43eux440ux438ux442ux43cux443}{%
+\subsubsection{Приклад допоміжних значень, які генеруються в процесі
+роботи
+алгоритму}\label{ux43fux440ux438ux43aux43bux430ux434-ux434ux43eux43fux43eux43cux456ux436ux43dux438ux445-ux437ux43dux430ux447ux435ux43dux44c-ux44fux43aux456-ux433ux435ux43dux435ux440ux443ux44eux442ux44cux441ux44f-ux432-ux43fux440ux43eux446ux435ux441ux456-ux440ux43eux431ux43eux442ux438-ux430ux43bux433ux43eux440ux438ux442ux43cux443}}
+
+    Розподіл хеш-значень, згенерованих алгоритмом \(\textit{Primary hash}\)
+(500 випробувань):
+
+\begin{itemize}
+\tightlist
+\item
+  Для вхідних даних, які задовольняють вимогам (top-5 by frequency):
+\item
+  Для вхідних даних, які не задовольняють вимогам (top-5 by frequency):
+\end{itemize}
+
+Згідно з емпіричними тестами, у розподілі даних, які задовольняють
+вимогам деякі елементи спостерігаються із значно більшою ймовірністю.
+Якщо дані не задовольняють необхідним вимогам, розподіл ключів є ближчим
+до рівномірного розподілу, для подібних даних не було реалізовано
+алгоритм створення надійного ключа.
+
+    Приклади пар (\(\text{key},\text{check_symbols}\)), які згенеровано з
+використанням нечіткого екстрактора: 1.
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\setcounter{enumi}{1}
+\item
+\item
+\end{enumerate}
+
+Приклади 1. та 3. були згенерованим для однієї людини, у прикладі 2.
+було використано біометричні дані іншого користувача. Визначення
+належності ключа та перевірочних символів конкретному користувачу є
+візуально неможливим.
+
+    Приклади шифрування з використанням солі (SHA512+salt):
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\item
+\item
+\end{enumerate}
+
+    \hypertarget{ux432ux438ux441ux43dux43eux432ux43aux438}{%
+\subsubsection{Висновки}\label{ux432ux438ux441ux43dux43eux432ux43aux438}}
+
+У роботі було реалізовано криптографічно безпечний, ефективний алгоритм
+нечіткого екстрактора.\\
+Алгоритм генерує приватний ключ базуючись на послідовності зображень або
+відеофайлу які відповідають необхідним вимогам. Результатом роботи є
+послідовності ключа та перевірочних символів, які для коректно обраних
+параметрів моделі є криптографічно безпечними, і можуть бути використані
+для ініціалізації інших криптографічних алгоритмів.\\
+Було показано, що послідовність перевірочних символів є принаймні
+\((SDif(\mathscr{U}),m,m-t\log{n+1},t)\)-безпечною.\\
+Значна кількість enterprise-моделей нечітких екстракторів, використовує
+коди Ріда-Соломона з малою кількістю перевірочних символів для створення
+безпечного ескізу, що також було враховано у роботі, при визначенні
+алгоритму та параметрів моделі за замовчуванням.\\
+Було протестовано коректність роботи моделі на біометричних даних
+ідентичної людини, які отримувалися впродовж 2-х місяців (всього 4
+тести, які завершилися успішним відновленням ключа).\\
+Позитивними рисами реалізованої моделі нечіткого екстрактора є значна
+гнучкість в обранні параметрів, що дозволяє налаштувати нечіткий
+екстрактор в залежності від потреб, висока ентропія і можливість
+повторного створення неідентичного ключа, який авторизує користувача, у
+випадку якщо минулий ключ був опублікований, і можливість використання
+послідовності солі для значного ускладнення ряду вразливостей таких як
+rainbow table attack, які потенційно дозволяють отримати біометричні
+дані користувача.\\
+Негативними рисами алгоритму є значна обчислювальна складність створення
+ключа зі сторони серверу, що може бути використано зловмисниками для
+проведення DoS атак. Тому, використання алгоритму для ініціалізації
+web-протоколів є неефективним і потенційно вразливим.\\
+Натомість, алгоритм нечіткого екстрактора можна використовувати як
+додатковий рівень захисту користувача для дій, які є виключно
+конфіденційними (наприклад, створення електронного підпису документу).\\
+Для ініціалізації ключа зі сторони серверу, необхідною є персональна
+присутність користувача, або надання його даних з довірених ресурсів.
+Також користувач може створити ключ локально для ряду задач (наприклад,
+аутентифікація у локальній мережі або шифрування файлів). Слід
+зауважити, що алгоритм базується на бібліотеці dlib, тому коректна
+робота моделі частково залежить від алгоритмів, які були реалізовані у
+даній бібліотеці.
+
+    \hypertarget{ux441ux43fux438ux441ux43eux43a-ux432ux438ux43aux43eux440ux438ux441ux442ux430ux43dux438ux445-ux43fux435ux440ux448ux43eux434ux436ux435ux440ux435ux43b}{%
+\subsection{Список використаних
+першоджерел:}\label{ux441ux43fux438ux441ux43eux43a-ux432ux438ux43aux43eux440ux438ux441ux442ux430ux43dux438ux445-ux43fux435ux440ux448ux43eux434ux436ux435ux440ux435ux43b}}
+
+\begin{itemize}
+\item
+  \begin{enumerate}
+  \def\labelenumi{(\arabic{enumi})}
+  \tightlist
+  \item
+    http://web.cs.ucla.edu/\textasciitilde rafail/PUBLIC/89.pdf\\
+    Fuzzy Extractors: How to Generate Strong Keys from Biometrics and
+    Other Noisy Data\\
+    (Yevgeniy Dodis, Rafail Ostrovsky, Leonid Reyzin, Adam Smith.
+    January 20, 2008)
+  \end{enumerate}
+\item
+  \begin{enumerate}
+  \def\labelenumi{(\arabic{enumi})}
+  \setcounter{enumi}{1}
+  \tightlist
+  \item
+    https://ro.uow.edu.au/cgi/viewcontent.cgi?article=1698\&context=eispapers1\\
+    LI, N., Guo, F., Mu, Y., Susilo, W. \& Nepal, S. (2017). Fuzzy
+    Extractors for Biometric Identification. 37th IEEE\\
+    Internaitonal Conference on Distributed Computing Systems (ICDCS
+    2017) (pp.~667-677). United States: IEEE.
+  \end{enumerate}
+\item
+  \begin{enumerate}
+  \def\labelenumi{(\arabic{enumi})}
+  \setcounter{enumi}{2}
+  \tightlist
+  \item
+    https://www.cs.bu.edu/\textasciitilde reyzin/papers/fuzzysurvey.pdf\\
+    Fuzzy Extractors. A Brief Survey of Results from 2004 to 2006\\
+    (Yevgeniy Dodis, Leonid Reyzin, Adam Smith)
+  \end{enumerate}
+\item
+  \begin{enumerate}
+  \def\labelenumi{(\arabic{enumi})}
+  \setcounter{enumi}{3}
+  \tightlist
+  \item
+    https://faculty.math.illinois.edu/\textasciitilde duursma/CT/RS-1960.pdf\\
+    POLYNOMIAL CODES OVER CERTAIN FINITE FIELDS* I. S. REED AND G.
+    SOLOMON
+  \end{enumerate}
+\item
+  \begin{enumerate}
+  \def\labelenumi{(\arabic{enumi})}
+  \setcounter{enumi}{4}
+  \tightlist
+  \item
+    https://www.arijuels.com/wp-content/uploads/2013/09/JS02.pdf\\
+    A Fuzzy Vault Scheme (Ari Juels and Madhu Sudan) RSA Laboratories,
+    Bedford, MA 01730, USA
+  \end{enumerate}
+\item
+  \begin{enumerate}
+  \def\labelenumi{(\arabic{enumi})}
+  \setcounter{enumi}{5}
+  \tightlist
+  \item
+    https://digital.csic.es/bitstream/10261/15966/1/SAM3262.pdf\\
+    Biometric Fuzzy Extractor Scheme for Iris Templates\\
+    F. Hernandez Alvarez, L. Hernandez Encinas, C. Sanchez Avila\\
+    Departamento Matematica Aplicada a las Tecnolog ıas de la
+    Informacion, E.T.S.I.T.\\
+    Universidad Politecnica de Madrid. Spain.
+  \end{enumerate}
+\item
+  \begin{enumerate}
+  \def\labelenumi{(\arabic{enumi})}
+  \setcounter{enumi}{6}
+  \tightlist
+  \item
+    https://nure.ua/wp-content/uploads/2018/Scientific\_editions/are\_2018\_24.pdf\\
+    ПОРІВНЯЛЬНИЙ АНАЛІЗ БІОМЕТРИЧНИХ КРИПТОСИСТЕМ\\
+    М. С. ЛУЦЕНКО, О. О. КУЗНЕЦОВ, Д. І. ПРОКОПОВИЧ-ТКАЧЕНКО, В. П.
+    ЗВЄРЄВ, А. О. УВАРОВА
+  \end{enumerate}
+\end{itemize}
+
+
+    % Add a bibliography block to the postdoc
+    
+    
+    
+\end{document}
