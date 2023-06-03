@@ -167,11 +167,29 @@
     \renewcommand{\LaTeX}{\textrm{\Oldlatex}}
     % Document parameters
     % Document title
-    
+    \date{}
     \title{
-      \text{Курсова робота}\\
-      \text{На тему}\\
-      \text{Fuzzy extractors}
+      \small{Київський Національний університет імені Тараса Шевченка}\\
+      \small{Механіко-Математичний факультет}\\
+      \small{Кафедра алгебри і комп'ютерної математики}\\
+      \normalfont 
+      \vspace{30ex}
+      \bf{\huge{Курсова робота}}\\
+      \normalfont 
+      \vspace{5ex}
+      \Large{На тему}\\
+      \Large{Нечіткі екстрактори}\\
+      \vspace{15ex}
+      \small{Студента третього курсу}\\
+      \small{Механіко-математичного факультету}\\
+      \small{ОР Бакалавр}\\
+      \small{ОП Компютерна математика}\\
+      \small{Красовського Олександра Ігоровича}\\
+      \vspace{10ex}
+      \small{Науковий керівник:}\\
+      \small{доктор фізико-математичних наук, професор}\\
+      \small{Олійник Андрій Степанович}\\
+      \vspace{15ex}
     }
     
     
@@ -398,39 +416,49 @@
     \hypertarget{ux437ux43cux456ux441ux442}{%
 \subsection{Зміст}\label{ux437ux43cux456ux441ux442}}
 
+\vspace{2ex}
 \begin{enumerate}
 \def\labelenumi{\arabic{enumi}.}
 \tightlist
 \item
   \hyperref[нечіткі-екстрактори]{Вступ}
+  \vspace{2ex}
 \item
   \hyperref[постановка-задачі-та-огляд-літератури]{Постановка задачі та огляд літератури}
+  \vspace{2ex}
 \item
   \hyperref[необхідні-допоміжні-відомості]{Необхідні допоміжні відомості}
+  \vspace{2ex}
 \item
   \hyperref[опис-структури-нечіткого-екстрактора]{Опис структури нечіткого екстрактора}
+  \vspace{2ex}
 \item
   \hyperref[аналіз-криптографічної-безпеки-побудованого-нечіткого-екстрактора]{Аналіз криптографічної безпеки побудованого нечіткого екстрактора}
+  \vspace{2ex}
 \item
   \hyperref[аналіз-ефективності-побудованої-моделі]{Аналіз ефективності побудованої моделі}
+  \vspace{2ex}
 \item
   \hyperref[приклади-використання]{Приклади використання та імітаційні експерименти}
+  \vspace{2ex}
 \item
   \hyperref[висновки]{Висновки}
+  \vspace{2ex}
 \end{enumerate}
+\vspace{100ex}
 
     \hypertarget{ux43dux435ux447ux456ux442ux43aux456-ux435ux43aux441ux442ux440ux430ux43aux442ux43eux440ux438}{%
 \subsection{Нечіткі
 екстрактори}\label{ux43dux435ux447ux456ux442ux43aux456-ux435ux43aux441ux442ux440ux430ux43aux442ux43eux440ux438}}
-
+\vspace{5ex}
     Нечіткі екстрактори --- це метод, який дозволяє використовувати
 біометричні дані як вхідні дані для стандартних криптографічних методів
 для підвищення їх безпеки. «Нечіткість» у цьому контексті стосується
-того факту, що фіксовані значення, необхідні для криптографії, будуть
+того факту, що фіксовані значення, необхідні для роботи криптографічних алгоритмів, будуть
 отримані зі значень, близьких до вихідного ключа, але не ідентичних, без
 шкоди для необхідної безпеки.
 
-Нечіткі екстрактори --- це біометричний інструмент, який дозволяє
+Нечіткі екстрактори --- алгоритми, які дозволяють
 автентифікувати користувача за допомогою біометричного шаблону,
 створеного з біометричних даних користувача як ключа, шляхом вилучення
 однорідного випадкового рядка \(R\) з вхідних даних \(w\), з допуском на
@@ -449,7 +477,8 @@
 наприклад, для узгодження ключів між користувачем і сервером лише на
 основі біометричного введення.
 
-    Основні властивості нечітких екстракторів:
+\vspace{5ex}
+Властивості нечітких екстракторів:
 
 \begin{itemize}
 \item
@@ -459,31 +488,31 @@
   \begin{itemize}
   \tightlist
   \item
-    \(\forall\) неавторизованого користувача \(R^*\), з ймовірністю
-    \(1-\epsilon\) дані \(R^*\) відхиляються
+    \(\forall\) неавторизованого користувача \(R^*\), дані \(R^*\) відхиляються  з ймовірністю
+    \(1\)
   \item
     Для авторизованого користувача \(R\), алгоритм з ймовірністю
     \(1-\epsilon\) (де \(\epsilon\) - ймовірність однобічної помилки
     алгоритму), приймає дані \(R\) та авторизує користувача
   \end{itemize}
 \item
-  Нечіткий екстрактор є параметричною моделлю. Для довільного нечіткого
-  екстрактора, існує набір параметрів \(\theta \in \Theta\), для якого
+  Більшість нечітких екстракторів є параметричними моделями. Для параметричних нечіткоих екстрактор, існує набір параметрів \(\theta \in \Theta\), для якого
   ймовірність однобічної помилки є як завгодно малою.
 \item
-  Нечіткі екстрактори використовуються у комбінації з кодами виправлення
+  На практиці, нечіткі екстрактори часто використовуються у комбінації з кодами виправлення
   помилок (англ. Error Correction codes, ECC). Властивості ECC надають
   можливість створення публічного значення \(P\) (check symbols), яке
-  може бути оприлюднене без ризиків для безпеки користувача, і
+  за умов безпеки криптографічного ескізу може бути оприлюднене без ризиків для безпеки користувача, і
   використане для відновлення ключа за вихідними даними нечіткого
   екстрактора.
 \end{itemize}
-
+\vspace{15ex}
     \hypertarget{ux43fux43eux441ux442ux430ux43dux43eux432ux43aux430-ux437ux430ux434ux430ux447ux456-ux442ux430-ux43eux433ux43bux44fux434-ux43bux456ux442ux435ux440ux430ux442ux443ux440ux438}{%
 \subsection{Постановка задачі та огляд
 літератури}\label{ux43fux43eux441ux442ux430ux43dux43eux432ux43aux430-ux437ux430ux434ux430ux447ux456-ux442ux430-ux43eux433ux43bux44fux434-ux43bux456ux442ux435ux440ux430ux442ux443ux440ux438}}
 
-Постановка задачі:
+\bf{Постановка задачі:}
+\normalfont
 
 Побудова параметричної моделі нечіткого екстрактору на основі однієї з
 моделей face-recognition з відкритим вихідним кодом. Вхідними даними
@@ -505,29 +534,24 @@
   \begin{enumerate}
   \def\labelenumi{\arabic{enumi}.}
   \item
-    Відповідно до ресурсу:
-    https://www.cs.bu.edu/\textasciitilde reyzin/fuzzysurvey.html
-    ``Fuzzy Extractors A Brief Survey of Results from 2004 to 2006''
-    \textgreater{} The tradeoff between the error tolerance and the
+    Відповідно до ресурсу [3]:\\
+    The tradeoff between the error tolerance and the
     entropy loss depends on the choice of errorcorrecting code. For
-    large alphabets (\(\mathbb{F}\) is a field of size \(\geq n\)),
-    \textgreater{} one can use Reed-Solomon codes to get the optimal
-    entropy loss of \(2t\log{|\mathbb{F}|}\). \textgreater{} No secure
-    sketch construction can have better tradeoff between error tolerance
-    and entropy loss than \textgreater{} Construction 1, as searching
-    for better secure sketches for the Hamming distance is equivalent to
-    searching for \textgreater{} better error-correcting codes. Better
-    secure sketches, however, can be achieved if one is willing to
-    \textgreater{} slightly weaken the guarantee of correctness (Section
-    4).
+    large alphabets (\(\mathbb{F}\) is a field of size \(\geq n\)),\\
+    one can use Reed-Solomon codes to get the optimal
+    entropy loss of \(2t\log{|\mathbb{F}|}\). \\
+    No secure sketch construction can have better tradeoff between error tolerance
+    and entropy loss, as searching for better secure sketches for the Hamming distance is equivalent to searching for
+    better error-correcting codes. \\
+    Better secure sketches, however, can be achieved if one is willing to\\
+    slightly weaken the guarantee of correctness.
 
-    (де \(\mathbb{F}\) - алфавіт ECC; t - вага Хемінга векторів, для
-    яких вимірюється значення \(\text{loss} = 2t\log{|\mathbb{F}|}\))
+    (\(\mathbb{F}\) - алфавіт ECC; t - вага Хемінга векторів, для
+    яких вимірюється значення \(\text{loss} = 2t\log{|\mathbb{F}|}\))\\
 
-    Відповідно до роботи ``Fuzzy Extractors A Brief Survey of Results
-    from 2004 to 2006'', даний код конструює безпечну послідовність
+    Відповідно до [3], даний код конструює безпечну послідовність
     перевірочних символіволів, за якою не існує оптимального алгоритму
-    отримання вхідних даних. Також, даний код має оптимальну втрату
+    отримання вхідних даних, якщо кількість перевірочних символів є достатньо малою. Також, даний код має оптимальну втрату
     ентропії після додавання перевірочних символів до послідовності:
     \(2t\log{|\mathbb{F}|}\). Результат було враховано під час вибору
     коду ECC та реалізації нечіткого екстрактора.
@@ -538,8 +562,9 @@
 \subsubsection{Необхідні допоміжні
 відомості}\label{ux43dux435ux43eux431ux445ux456ux434ux43dux456-ux434ux43eux43fux43eux43cux456ux436ux43dux456-ux432ux456ux434ux43eux43cux43eux441ux442ux456}}
 
+\vspace{5ex}
     \hypertarget{ux43cux435ux442ux440ux438ux447ux43dux438ux439-ux43fux440ux43eux441ux442ux456ux440}{%
-\subsubsection{Метричний
+\textbf{Метричний
 простір}\label{ux43cux435ux442ux440ux438ux447ux43dux438ux439-ux43fux440ux43eux441ux442ux456ux440}}
 
 Означення \hyperref[література]{(4)}: Метричний простір: Метричний
@@ -553,12 +578,15 @@ $\mathcal{M}\times\mathcal{M}\longrightarrow \mathbb{R}^{}+ $, для
 Examples: - dis = Hamming distance: \$h(v\_1,v\_2) = \$ sum of one-bits
 of \(v_1-v_2\) over \(\mathbb{F}_2\) - dis = set difference: \(\cup\) -
 dis = Levenstein distance
+\vspace{15ex}
 
-    \hypertarget{min-entropy-average-min-entropy-statistical-distance}{%
-\subsubsection{Min-Entropy, Average Min-Entropy, Statistical
-Distance}\label{min-entropy-average-min-entropy-statistical-distance}}
+\hypertarget{min-entropy-average-min-entropy-statistical-distance}{%
+\textbf{Min-Entropy, Average Min-Entropy}\label{min-entropy-average-min-entropy-statistical-distance}}
 
-Означення (min-entropy) (4):
+\vspace{2ex}
+
+\bf{Означення (Min-Entropy):}
+\normalfont
 
 Мінімальною ентропією \(H_\infty(A)\) випадкової величини A називається
 значення:
@@ -566,14 +594,19 @@ Distance}\label{min-entropy-average-min-entropy-statistical-distance}}
 \(~~~~H_\infty(A) = -\log{\underset{a}{\max}}{Pr[A = a]}\)\\
 \(~~~~~~~~\) де \(\underset{a}{\max}{Pr[A = a]}\) - передбачуваність А.
 
-Означення (Average Min-Entropy) (4):
+\vspace{3ex}
+
+\bf{Означення (Average Min-Entropy):}
+\normalfont
 
 Середньою ентропією випадкової величини A за умови B називають значення:
 
-$\overset{\text{~}}{H}\_\infty(A\textbar B) = $ todo add descrtiption
+$\overset{\text{~}}{H}_\infty(A\textbar B) = $ todo add descrtiption
+
+\vspace{3ex}
 
     \hypertarget{ux441ux442ux430ux442ux438ux441ux442ux438ux447ux43dux430-ux432ux456ux434ux441ux442ux430ux43dux44c}{%
-\subsubsection{Статистична
+\textbf{Статистична
 відстань}\label{ux441ux442ux430ux442ux438ux441ux442ux438ux447ux43dux430-ux432ux456ux434ux441ux442ux430ux43dux44c}}
 
 Означення: Статистична відстань між двома ймовірнісними розподілами
@@ -585,8 +618,10 @@ $\overset{\text{~}}{H}\_\infty(A\textbar B) = $ todo add descrtiption
 \(~~\)відстань між заданим розподілом (ключів екстрактору) і рівномірним
 розподілом U.
 
+\vspace{3ex}
+
     \hypertarget{ux437ux430ux445ux438ux449ux435ux43dux456-ux435ux441ux43aux456ux437ux438-ux442ux430-ux43dux435ux447ux456ux442ux43aux456-ux435ux43aux441ux442ux440ux430ux43aux442ux43eux440ux438}{%
-\subsubsection{Захищені ескізи та нечіткі
+\textbf{Захищені ескізи та нечіткі
 екстрактори}\label{ux437ux430ux445ux438ux449ux435ux43dux456-ux435ux441ux43aux456ux437ux438-ux442ux430-ux43dux435ux447ux456ux442ux43aux456-ux435ux43aux441ux442ux440ux430ux43aux442ux43eux440ux438}}
 
 Захищений ескіз є важливою компонентою нечітких екстракторів. Безпечний
@@ -595,7 +630,7 @@ $\overset{\text{~}}{H}\_\infty(A\textbar B) = $ todo add descrtiption
 наприклад біометричну інформацію,\\
 та створює на її основі ескіз \(s\), який є допоміжним рядком.
 
-Означення: Нечітким ескізом називається набір функцій
+\bf{Означення:}\normalfont \space Нечітким ескізом називається набір функцій
 \((\text{SS},\text{Rec})\), які мають наступні властивості: - Фунція
 створення ескізу \(\text{SS}\) на вхідних даних
 \(\omega \in \mathcal{M}\) повертає ескіз\\
@@ -611,9 +646,8 @@ $\overset{\text{~}}{H}\_\infty(A\textbar B) = $ todo add descrtiption
 \(\omega_1\) є подібним до \(\omega\).\\
 Ескіз \(s\) є публічно доступним, оскільки він це розкриває достатньої
 інформації про секретні дані \(\omega\).\\
-Одним з можливих методів створення безпечного ескізу є БЧХ-коди,
-означення яких наведено нижче:
-
+Одним з можливих методів створення безпечного ескізу є БЧХ-коди:
+\vspace{20ex}
     \hypertarget{ux43aux440ux438ux43fux442ux43eux433ux440ux430ux444ux456ux447ux43dux430-ux441ux442ux456ux439ux43aux456ux441ux442ux44c-ux431ux435ux437ux43fux435ux447ux43dux438ux445-ux435ux441ux43aux456ux437ux456ux432}{%
 \subsubsection{Криптографічна стійкість безпечних
 ескізів}\label{ux43aux440ux438ux43fux442ux43eux433ux440ux430ux444ux456ux447ux43dux430-ux441ux442ux456ux439ux43aux456ux441ux442ux44c-ux431ux435ux437ux43fux435ux447ux43dux438ux445-ux435ux441ux43aux456ux437ux456ux432}}
@@ -778,7 +812,8 @@ Source-код моделі: \url{https://github.com/ageitgey/face_recognition}
   згідно з \(\text{MIT License}\)
 \item
   Модель побудована на основі deep face-recognition model, реалізованій
-  у бібліотеці \url{http://dlib.net/}
+  у бібліотеці \\
+  \url{http://dlib.net/}
 \item
   Більш детально розглянуто метод
   \texttt{face\_recognition.api.face\_distance}, для отримання формату
@@ -791,17 +826,26 @@ Source-код моделі: \url{https://github.com/ageitgey/face_recognition}
   використовує базову Евклідову метрику у просторі розмірності \(128\).
 \end{enumerate}
 
+\vspace{20ex}
+
     \hypertarget{ux43eux43fux438ux441-ux441ux435ux440ux435ux434ux43eux432ux438ux449ux430-ux440ux43eux437ux440ux43eux431ux43aux438}{%
 \subsection{Опис середовища
 розробки}\label{ux43eux43fux438ux441-ux441ux435ux440ux435ux434ux43eux432ux438ux449ux430-ux440ux43eux437ux440ux43eux431ux43aux438}}
 
-Environment info: - Platform: \texttt{Docker} - Container image:
-\texttt{python:3.10} - SSH port: \texttt{2222} - IDE:
-\texttt{PyCharm\ 2023.1\ RC\ 2} - Base: \texttt{Windows\ 11\ (WSL2)}
+Environment info: 
+- Platform: \texttt{Docker} \\
+- Container image: \texttt{python:3.10} \\
+- SSH port: \texttt{2222} \\
+- IDE: \texttt{PyCharm\ 2023.1\ RC\ 2} \\
+- Base: \texttt{Windows\ 11\ (WSL2)}\\
 
-dependencies (direct): - itertools - numpy\textasciitilde=1.24.2 -
-opencv-python\textasciitilde=4.7.0.72 - face\_recognition -
-Pillow\textasciitilde=9.4.0 - PIL - hashlib
+dependencies (direct): \\
+- itertools - numpy=1.24.2 \\
+- opencv-python=4.7.0.72 \\
+- face\_recognition \\
+- Pillow=9.4.0 \\
+- PIL \\
+- hashlib\\
 
 dependencies (transitive, manually installed) - ffmpeg - CMake - dlib -
 libsm6 - libxext6 - libsasl2-dev - python-dev - libldap2-dev -
@@ -811,19 +855,28 @@ libssl-dev - openssh-server
 \subsection{Перелік класів та модулів
 проекту}\label{ux43fux435ux440ux435ux43bux456ux43a-ux43aux43bux430ux441ux456ux432-ux442ux430-ux43cux43eux434ux443ux43bux456ux432-ux43fux440ux43eux435ux43aux442ux443}}
 
-python Modules: - extractors.py: Реалізація нечіткого екстрактора -
-cache.py: Кешування обєктів, пришвидшення повторного виконання тестів -
-logger.py - main.py: - testing.py: додаткові класи для тестування
+python Modules: \\
+- extractors.py: Реалізація нечіткого екстрактора \\
+- cache.py: Кешування обєктів, пришвидшення повторного виконання тестів \\
+- logger.py \\
+- main.py\\
+- testing.py: додаткові класи для тестування
 нечіткого екстрактора - test\_face\_recognition.py: unit-тести окремих
-класів та модулів
+класів та модулів\\
 
-python Classes: - Cache - кешування обєктів - FrameIterator - ітерування
-зображень у відео-файлі - FaceVectorExtractor - допоміжні функції для
-отримання face-вектору за зображенням - FuzzyExtractorFaceRecognition -
-клас нечіткого екстрактора. Основна логіка екстрактора зосереджена у
-даному класі - LogFormatter - форматування виводу (stdin/log file) -
-TestFaceVectorExtractor - основний тестовий клас - TestCases -
-допоміжний клас для проведення тестування
+python Classes: \\
+- Cache - кешування обєктів \\
+- FrameIterator - ітерування
+зображень у відео-файлах \\
+- FaceVectorExtractor - допоміжні функції для
+отримання face-вектору за зображенням \\
+- FuzzyExtractorFaceRecognition -
+клас нечіткого екстрактора.\\
+- LogFormatter - форматування виводу (stdin/log file) \\
+- TestFaceVectorExtractor - основний тестовий клас \\
+- TestCases - допоміжний клас для проведення тестування
+
+\vspace{20ex}
 
     \hypertarget{ux43eux43fux438ux441-ux441ux442ux440ux443ux43aux442ux443ux440ux438-ux43dux435ux447ux456ux442ux43aux43eux433ux43e-ux435ux43aux441ux442ux440ux430ux43aux442ux43eux440ux430}{%
 \subsection{Опис структури нечіткого
@@ -934,7 +987,7 @@ TestFaceVectorExtractor - основний тестовий клас - TestCases
     \begin{itemize}
 \tightlist
 \item
-  Primary hash (первинний хеш): (Input data:
+  Primary hash: (Input data:
   \texttt{np.ndarray{[}np.ndarray{]}})
 
   \begin{enumerate}
@@ -966,12 +1019,11 @@ TestFaceVectorExtractor - основний тестовий клас - TestCases
     граней двох або більшої кількості гіперкубів, даний face-вектор не
     може бути оброблені нечітким екстрактором, тому вхідні дані будуть
     відхилені. (На практиці, ймовірність такої події дуже мала, під час
-    тестування вхідні дані не були відхилені жодного разу).
+    тестування вхідні дані не були відхилені жодного разу).\\
     \end{quote}
-
+    
     Параметр \(d \in (0,1)\), є параметром нечіткого екстрактора, який
-    впливає на рівень, на якому подібні face-вектори будуть вважатися
-    ідентичними.
+    впливає на рівень подібності face-векторів.
   \item
     Нехай \(std\_max,\alpha\) - параметри нечіткого екстрактора.
     Нехай \(\overline{v},\overset{\text{~}}{v}\)
@@ -1177,6 +1229,8 @@ TestFaceVectorExtractor - основний тестовий клас - TestCases
   \end{itemize}
 \end{itemize}
 
+\vspace{25ex}
+
     \hypertarget{ux430ux43dux430ux43bux456ux437-ux43aux440ux438ux43fux442ux43eux433ux440ux430ux444ux456ux447ux43dux43eux457-ux431ux435ux437ux43fux435ux43aux438-ux43fux43eux431ux443ux434ux43eux432ux430ux43dux43eux433ux43e-ux43dux435ux447ux456ux442ux43aux43eux433ux43e-ux435ux43aux441ux442ux440ux430ux43aux442ux43eux440ux430.}{%
 \subsubsection{Аналіз криптографічної безпеки побудованого нечіткого
 екстрактора.}\label{ux430ux43dux430ux43bux456ux437-ux43aux440ux438ux43fux442ux43eux433ux440ux430ux444ux456ux447ux43dux43eux457-ux431ux435ux437ux43fux435ux43aux438-ux43fux43eux431ux443ux434ux43eux432ux430ux43dux43eux433ux43e-ux43dux435ux447ux456ux442ux43aux43eux433ux43e-ux435ux43aux441ux442ux440ux430ux43aux442ux43eux440ux430.}}
@@ -1280,7 +1334,7 @@ TestFaceVectorExtractor - основний тестовий клас - TestCases
     відстані розподілу ключів, можемо зробити висновок про відсутність
     вразливостей пов'язаних з нерівномірною ймовірністю отримання деяких
     ключів. Тому нечіткий екстрактор (з точки зору розподілу ключів), є
-    криптографічно безпечним.
+    криптографічно безпечним.\\
   \end{itemize}
 \item
   Аналіз на криптографічну безпеку з точки зору хеш-функцій.
@@ -1289,7 +1343,7 @@ TestFaceVectorExtractor - основний тестовий клас - TestCases
   \tightlist
   \item
     Вимоги до будь-якого криптографічно стійкого нечіткого екстрактора,
-    включають деякі властивості\\
+    включають деякі властивості
     криптографічно безпечних хеш-функцій:
 
     \begin{enumerate}
@@ -1354,7 +1408,7 @@ TestFaceVectorExtractor - основний тестовий клас - TestCases
   \item
     Тоді Код Ріда-Соломона, як часний випадок БЧХ-кодів, є\\
     в середньому \((SDif(\mathscr{U}),m,m-t\log{n+1},t)\) - безпечним
-    ескізом. (Theorem 6.3 для PinSketch з ресурсу (10))
+    ескізом. (Theorem 6.3 для PinSketch з ресурсу [1])
   \item
     Згідно з теоремою, даний безпечний ескіз має більший рівень
     ентропії, і, відповідно, є більш безпечним для меншої кількості
@@ -1476,9 +1530,7 @@ TestFaceVectorExtractor - основний тестовий клас - TestCases
 \item
   Користувач бажає закодувати файл за допомогою алгоритму AES.\\
   Ключ для алгоритму генерується за допомогою класу FuzzyExtractor.
-  Оскільки секретний ключ базується на біометричних даних, користувачу
-  не потрібно запам'ятовувати пароль.\\
-  Натомість для декодування файлу потрібно пройти тест розпізнавання
+  Оскільки секретний ключ базується на біометричних даних, для декодування файлу потрібно пройти тест розпізнавання
   обличчя.
 \item
   Користувач бажає створити пару ключів для алгоритму ECDSA для
@@ -1492,9 +1544,9 @@ TestFaceVectorExtractor - основний тестовий клас - TestCases
   розпізнавання обличчя для отримання ключа сертифікату.
 \item
   Автентифікація користувачів на деякому web-ресурсі. Server-side
-  web-ресурсу зберігає послідовності\\
+  web-ресурсу зберігає послідовності
   \(\text{salt}\) та \(check\_symbols\), які є доступними за
-  запитом всім користувачам. Клієнт проходить\\
+  запитом всім користувачам. Клієнт проходить
   біометричну аутентифікацію, і отримує ключ, який є спільним секретом
   клієнта і сервера.
 \end{itemize}
